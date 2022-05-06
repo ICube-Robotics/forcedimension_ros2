@@ -1,0 +1,30 @@
+fd/controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+
+    fd_controller:
+      type: effort_controllers/JointGroupEffortController # ForwardCommandController
+      
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    ee_pose_broadcaster:
+      type: ee_pose_broadcaster/EePoseBroadcaster
+
+fd/fd_controller:
+  ros__parameters:
+    command_interfaces:
+      - effort
+    state_interfaces:
+      - position
+      - velocity
+      - effort
+    joints:
+      - fd_x
+      - fd_y
+      - fd_z
+
+fd/ee_pose_broadcaster:
+  ros__parameters:
+    transform_translation: [0.0,0.0,0.0]
+    transform_rotation: [0.0,1.5707,0.0] # rpy or quaternion

@@ -1,0 +1,9 @@
+<library path="fd_hardware">
+  <class name="fd_hardware/FDEffortHardwareInterface"
+         type="fd_hardware::FDEffortHardwareInterface"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      ROS2 Control hardware interface for Force Dimension Haptic Interfaces.
+    </description>
+  </class>
+</library>

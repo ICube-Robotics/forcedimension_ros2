@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="fd">
+
+    <!-- Import iiwa urdf file -->
+    <xacro:include filename="$(find fd_description)/urdf/fd.urdf" />
+
+    <!-- Import iiwa ros2_control description -->
+    <xacro:include filename="$(find fd_description)/ros2_control/fd.r2c_hardware.xacro" />
+
+    <xacro:fd_ros2_control name="FDHapticInterface"/>
+</robot>
