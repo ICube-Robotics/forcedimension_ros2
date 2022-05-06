@@ -1,4 +1,4 @@
-// Copyright 2021 ros2_control development team
+// Copyright 2022, ICube Laboratory, University of Strasbourg
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include <Eigen/Dense> 
+#include <Eigen/Dense>
 
 
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
@@ -54,7 +54,7 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn EePose
 {
   try
   {
-    // definition of the parameters that need to be queried from the 
+    // definition of the parameters that need to be queried from the
     // controller configuration file with default values
     auto_declare<std::vector<double>>("transform_translation", std::vector<double>());
     auto_declare<std::vector<double>>("transform_rotation", std::vector<double>());
@@ -194,7 +194,7 @@ controller_interface::return_type EePoseBroadcaster::update(const rclcpp::Time &
 
     ee_pose_msg.header.stamp = get_node()->get_clock()->now();
     ee_pose_msg.header.frame_id = "fd_base";
-    // update pose message 
+    // update pose message
     ee_pose_msg.pose.position.x = pose_(0,3);
     ee_pose_msg.pose.position.y = pose_(1,3);
     ee_pose_msg.pose.position.z = pose_(2,3);

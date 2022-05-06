@@ -17,7 +17,7 @@ find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 
-set (EXT_LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/fd_sdk")
+set(EXT_LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/fd_sdk")
 include_directories("${EXT_LIBS_DIR}/include")
 
 
@@ -53,7 +53,7 @@ ament_target_dependencies(
   rclcpp_lifecycle
 )
 
-target_link_libraries(${PROJECT_NAME} dhd drd usb-1.0) 
+target_link_libraries(${PROJECT_NAME} dhd drd usb-1.0)
 
 pluginlib_export_plugin_description_file(hardware_interface fd_hardware_plugin.xml)
 

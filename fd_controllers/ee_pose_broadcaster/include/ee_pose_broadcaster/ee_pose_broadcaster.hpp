@@ -20,7 +20,7 @@
 #include <unordered_map>
 #include <vector>
 #include <Eigen/Dense>
-#include <Eigen/Geometry> 
+#include <Eigen/Geometry>
 
 
 #include "controller_interface/controller_interface.hpp"
@@ -69,10 +69,9 @@ protected:
   std::unordered_map<std::string, std::unordered_map<std::string, double>> name_if_value_mapping_;
 
   Eigen::Matrix4d transform_, pose_;
-  
+
 };
 
 }  // namespace ee_pose_broadcaster
 
 #endif  // EE_POSE_BROADCASTER__EE_POSE_BROADCASTER_HPP_
-

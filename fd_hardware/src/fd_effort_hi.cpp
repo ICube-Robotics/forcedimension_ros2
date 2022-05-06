@@ -1,3 +1,17 @@
+// Copyright 2022, ICube Laboratory, University of Strasbourg
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include "fd_hardware/fd_effort_hi.hpp"
 
 #include "dhdc.h"
@@ -102,19 +116,19 @@ FDEffortHardwareInterface::export_state_interfaces()
   {
     state_interfaces.emplace_back(hardware_interface::StateInterface(
       info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_states_position_[i]));
-      
+
   }
   for (uint i = 0; i < info_.joints.size(); i++)
   {
     state_interfaces.emplace_back(hardware_interface::StateInterface(
       info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_states_velocity_[i]));
-      
+
   }
   for (uint i = 0; i < info_.joints.size(); i++)
   {
     state_interfaces.emplace_back(hardware_interface::StateInterface(
       info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &hw_states_effort_[i]));
-      
+
   }
 
   return state_interfaces;
@@ -166,7 +180,7 @@ CallbackReturn FDEffortHardwareInterface::on_deactivate(const rclcpp_lifecycle::
 }
   // ------------------------------------------------------------------------------------------
 hardware_interface::return_type FDEffortHardwareInterface::read()
-{  
+{
   // "Success" flag
   int flag = 0;
 
@@ -180,7 +194,7 @@ hardware_interface::return_type FDEffortHardwareInterface::read()
   {
     flag += dhdGetGripperAngleRad(&hw_states_position_[6],interface_ID_);
   }
-  
+
   // Get velocity
   flag += dhdGetLinearVelocity(&hw_states_velocity_[0], &hw_states_velocity_[1], &hw_states_velocity_[2], interface_ID_);
   if(dhdHasWrist(interface_ID_) && hw_states_velocity_.size()>3)
@@ -191,9 +205,9 @@ hardware_interface::return_type FDEffortHardwareInterface::read()
   {
     flag += dhdGetGripperAngularVelocityRad(&hw_states_velocity_[6],interface_ID_);
   }
-  // Get forces  
+  // Get forces
   double torque[3];
-  double gripper_force;  
+  double gripper_force;
   flag += dhdGetForceAndTorqueAndGripperForce(&hw_states_effort_[0], &hw_states_effort_[1], &hw_states_effort_[2], &torque[0], &torque[1], &torque[2], &gripper_force, interface_ID_);
   if(dhdHasWrist(interface_ID_) && hw_states_effort_.size()>3)
   {
@@ -206,7 +220,7 @@ hardware_interface::return_type FDEffortHardwareInterface::read()
     hw_states_effort_[6] = gripper_force;
   }
 
-  if (flag >= 0) 
+  if (flag >= 0)
     return hardware_interface::return_type::OK;
   else{
     RCLCPP_ERROR(rclcpp::get_logger("FDEffortHardwareInterface"), "Updating from system failed!");
@@ -224,20 +238,20 @@ hardware_interface::return_type FDEffortHardwareInterface::write()
 
   if(!isNan){
     if(dhdHasGripper(interface_ID_) && hw_states_effort_.size()>6)
-      dhdSetForceAndTorqueAndGripperForce ( hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2], 
+      dhdSetForceAndTorqueAndGripperForce ( hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2],
                                             hw_commands_effort_[3], hw_commands_effort_[4], hw_commands_effort_[5],
                                             hw_commands_effort_[6], interface_ID_);
     else if(dhdHasWrist(interface_ID_) && hw_states_effort_.size()>3)
       dhdSetForceAndTorqueAndGripperForce ( hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2],
-                                            hw_commands_effort_[3], hw_commands_effort_[4], hw_commands_effort_[5], 
+                                            hw_commands_effort_[3], hw_commands_effort_[4], hw_commands_effort_[5],
                                             0, interface_ID_);
     else
-      dhdSetForceAndTorqueAndGripperForce (hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2], 
-                                            0, 0, 0, 0, interface_ID_);                                                                                      
+      dhdSetForceAndTorqueAndGripperForce (hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2],
+                                            0, 0, 0, 0, interface_ID_);
   }
   else
     dhdSetForceAndTorqueAndGripperForce (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, interface_ID_);
-  
+
 
   return hardware_interface::return_type::OK;
 }
@@ -248,21 +262,21 @@ bool FDEffortHardwareInterface::connectToDevice(){
 
   // Open connection
   if (dhdOpen () >= 0) {
-      RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : %s device detected",dhdGetSystemName()); 
+      RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : %s device detected",dhdGetSystemName());
 
       // Check if the device has 3 dof or more
       if(dhdHasWrist (interface_ID_))
-        RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Rotation enabled "); 
+        RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Rotation enabled ");
       else
-        RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Rotation disabled "); 
+        RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Rotation disabled ");
 
       // Retrieve the mass of the device
       double effector_mass = 0.0;
-      if (dhdGetEffectorMass(&effector_mass,interface_ID_) == DHD_NO_ERROR) {     
-          RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Effector Mass = %sg",std::to_string(effector_mass*1000.0)); 
+      if (dhdGetEffectorMass(&effector_mass,interface_ID_) == DHD_NO_ERROR) {
+          RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Effector Mass = %sg",std::to_string(effector_mass*1000.0));
       }
       else {
-          RCLCPP_WARN(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Impossible to retrieve effector mass !"); 
+          RCLCPP_WARN(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Impossible to retrieve effector mass !");
       }
 
       // Set force limit & enable force
@@ -278,18 +292,18 @@ bool FDEffortHardwareInterface::connectToDevice(){
       }
       // Gravity compensation
       if (dhdSetGravityCompensation (DHD_ON,interface_ID_) < DHD_NO_ERROR) {
-          RCLCPP_WARN(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Could not enable the gravity compensation !"); 
+          RCLCPP_WARN(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Could not enable the gravity compensation !");
           disconnectFromDevice();
       }
       else{
-          RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Gravity compensation enabled"); 
+          RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Gravity compensation enabled");
       }
       RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Device connected !");
 
-      
+
       if (dhdSetForceAndTorqueAndGripperForce (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,interface_ID_) < DHD_NO_ERROR) {
           disconnectFromDevice();
-      }       
+      }
 
       // Sleep 100 ms
       dhdSleep (0.1);
@@ -298,14 +312,14 @@ bool FDEffortHardwareInterface::connectToDevice(){
       return isConnected_;
   }
   else {
-      RCLCPP_ERROR(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Could not connect to device !"); 
+      RCLCPP_ERROR(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Could not connect to device !");
       isConnected_ = false;
       return isConnected_;
   }
 }
   // ------------------------------------------------------------------------------------------
 bool FDEffortHardwareInterface::disconnectFromDevice(){
-  RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : stopping the device."); 
+  RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : stopping the device.");
   // Stop the device: disables the force on the haptic device and puts it into BRAKE mode.
   int hasStopped = -1;
   while (hasStopped < 0) {
@@ -317,12 +331,12 @@ bool FDEffortHardwareInterface::disconnectFromDevice(){
   // close device connection
   int connectionIsClosed = dhdClose (interface_ID_);
   if (connectionIsClosed >= 0) {
-     RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd :  Disconnected ! "); 
+     RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd :  Disconnected ! ");
       interface_ID_ = false;
       return true;
   }
   else {
-      RCLCPP_ERROR(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Failled to disconnect !");     
+      RCLCPP_ERROR(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Failled to disconnect !");
       return false;
   }
 }
@@ -332,4 +346,4 @@ bool FDEffortHardwareInterface::disconnectFromDevice(){
 #include "pluginlib/class_list_macros.hpp"
 
 PLUGINLIB_EXPORT_CLASS(
-  fd_hardware::FDEffortHardwareInterface, hardware_interface::SystemInterface)   
+  fd_hardware::FDEffortHardwareInterface, hardware_interface::SystemInterface)

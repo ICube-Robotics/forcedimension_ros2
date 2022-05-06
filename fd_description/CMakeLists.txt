@@ -27,7 +27,7 @@ endif()
 # Install
 ################################################################################
 install(
-  DIRECTORY urdf ros2_control config 
+  DIRECTORY urdf ros2_control config
   DESTINATION share/${PROJECT_NAME}
 )
 

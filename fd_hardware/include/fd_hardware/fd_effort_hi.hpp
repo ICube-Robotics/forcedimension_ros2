@@ -1,3 +1,17 @@
+// Copyright 2022, ICube Laboratory, University of Strasbourg
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #ifndef FD_HARDWARE__FD_EFFORT_HI
 #define FD_HARDWARE__FD_EFFORT_HI
 
@@ -47,7 +61,7 @@ private:
   // ID of the interface (Rq: "-1" = unvalid/any that is connected)
   char interface_ID_ = -1;
   // Turned to true after the connection
-  bool isConnected_ = false;    
+  bool isConnected_ = false;
 
   // Store the command for the robot
   std::vector<double> hw_commands_effort_;
@@ -63,9 +77,9 @@ private:
   bool connectToDevice();
 
   /**
-  Terminate the USB communication with the device. 
+  Terminate the USB communication with the device.
   See disconnectFromDevice(std_msgs::msg::String& str) for details.
-  
+
   @return flag = true if has succeded
   */
   bool disconnectFromDevice();

@@ -1,5 +1,5 @@
 # forcedimension_ros2
-This stack includes `ros2_control` drivers for Force Dimension SDK compatible haptic interfaces. 
+This stack includes `ros2_control` drivers for Force Dimension SDK compatible haptic interfaces.
 
 ## Compatible devices
 The driver was currently tested on the following haptic devices:
@@ -30,18 +30,18 @@ The driver was currently tested on the following haptic devices:
     git clone https://github.com/ICube-Robotics/forcedimension_ros2.git src/forcedimension_ros2
     rosdep install --ignore-src --from-paths . -y -r
     ```
-5. Download the newest version of Force Dimension [SDK](https://www.forcedimension.com/software/sdk) and copy its content in the `fd_hardware/external/fd_sdk` directory. 
+5. Download the newest version of Force Dimension [SDK](https://www.forcedimension.com/software/sdk) and copy its content in the `fd_hardware/external/fd_sdk` directory.
 6. Compile and source the workspace by using:
     ```shell
     colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install
     source install/setup.bash
     ```
-### Running the driver 
+### Running the driver
 
-An example launch file is provided with this stack in the `fd_bringup` package. The driver can be run using 
+An example launch file is provided with this stack in the `fd_bringup` package. The driver can be run using
 ```shell
 ros2 launch fd_bringup fd.launch.py
-``` 
+```
 The device end-effector pose can then be found in the `/fd/ee_pose` and wrench can be set on the `/fd_controller/commands` topic.
 
 ## Practical information
@@ -50,26 +50,26 @@ The device end-effector pose can then be found in the `/fd/ee_pose` and wrench c
 USB devices require `su` privileges to operate unless allowed in udev rules
 
 To declare a new device :
-1. run `lsusb -v` which gives 
+1. run `lsusb -v` which gives
     ```shell
     idVendor = 0x1451 Force Dimension
     idProduct = 0x0301
     ```
-2. Create and edit udev rules file 
+2. Create and edit udev rules file
     ```shell
     sudo nano /etc/udev/rules.d/10-omega_3_USB.rules
-    ``` 
-    and in the file write 
+    ```
+    and in the file write
     ```shell
     ATTRS{idProduct}=="[PRODUCT_ID]", ATTRS{idVendor}=="[VENDOR ID]", MODE="666", GROUP="plugdev"
     ```
     **Note**: `[PRODUCT_ID]` is `idProduct` without `0x`, same for `[VENDOR ID]`
 
-3. To apply the new rule run 
+3. To apply the new rule run
     ```shell
     sudo udevadm trigger
     ```
-4. You can try your setup by running the `HapticDesk` executable from the sdk `fd_hardware/external/sdk-3.14.0/bin` folder. If the haptic device is recognized, you are ready to go. 
+4. You can try your setup by running the `HapticDesk` executable from the sdk `fd_hardware/external/sdk-3.14.0/bin` folder. If the haptic device is recognized, you are ready to go.
 
 ## Contacts ##
 ![icube](https://icube.unistra.fr/fileadmin/templates/DUN/icube/images/logo.png)
