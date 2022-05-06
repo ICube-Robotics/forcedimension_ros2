@@ -50,14 +50,8 @@ using hardware_interface::HW_IF_VELOCITY;
 
 EePoseBroadcaster::EePoseBroadcaster() {}
 
-controller_interface::return_type EePoseBroadcaster::init(const std::string & controller_name)
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn EePoseBroadcaster::on_init()
 {
-  auto ret = ControllerInterface::init(controller_name);
-  if (ret != controller_interface::return_type::OK)
-  {
-    return ret;
-  }
-
   try
   {
     // definition of the parameters that need to be queried from the 
@@ -68,10 +62,10 @@ controller_interface::return_type EePoseBroadcaster::init(const std::string & co
   catch (const std::exception & e)
   {
     fprintf(stderr, "Exception thrown during init stage with message: %s \n", e.what());
-    return controller_interface::return_type::ERROR;
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::ERROR;
   }
 
-  return controller_interface::return_type::OK;
+  return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
 }
 
 controller_interface::InterfaceConfiguration
@@ -175,7 +169,7 @@ double get_value(
   }
 }
 
-controller_interface::return_type EePoseBroadcaster::update()
+controller_interface::return_type EePoseBroadcaster::update(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
   for (const auto & state_interface : state_interfaces_)
   {

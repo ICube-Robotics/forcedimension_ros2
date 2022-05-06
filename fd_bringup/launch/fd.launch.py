@@ -68,7 +68,7 @@ def generate_launch_description():
     for controller in ["fd_controller", "joint_state_broadcaster", "ee_pose_broadcaster"]:
         load_controllers += [
             ExecuteProcess(
-                cmd=["ros2 run controller_manager spawner.py --controller-manager /fd/controller_manager {}".format(controller)],
+                cmd=["ros2 run controller_manager spawner --controller-manager /fd/controller_manager {}".format(controller)],
                 shell=True,
                 output="screen",
             )

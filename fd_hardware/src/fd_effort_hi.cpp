@@ -20,13 +20,14 @@
 namespace fd_hardware
 {
   // ------------------------------------------------------------------------------------------
-hardware_interface::return_type FDEffortHardwareInterface::configure(
+CallbackReturn FDEffortHardwareInterface::on_init(
   const hardware_interface::HardwareInfo & info)
 {
-  if (configure_default(info) != hardware_interface::return_type::OK)
+  if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
   {
-    return hardware_interface::return_type::ERROR;
+    return CallbackReturn::ERROR;
   }
+
 
   hw_states_position_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_states_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -43,7 +44,7 @@ hardware_interface::return_type FDEffortHardwareInterface::configure(
         rclcpp::get_logger("FDEffortHardwareInterface"),
         "Joint '%s' has %d command interfaces found. 1 expected.", joint.name.c_str(),
         joint.command_interfaces.size());
-      return hardware_interface::return_type::ERROR;
+      return CallbackReturn::ERROR;
     }
 
     if (joint.command_interfaces[0].name != hardware_interface::HW_IF_EFFORT)
@@ -52,7 +53,7 @@ hardware_interface::return_type FDEffortHardwareInterface::configure(
         rclcpp::get_logger("FDEffortHardwareInterface"),
         "Joint '%s' have %s command interfaces found. '%s' expected.", joint.name.c_str(),
         joint.command_interfaces[0].name.c_str(), hardware_interface::HW_IF_EFFORT);
-      return hardware_interface::return_type::ERROR;
+      return CallbackReturn::ERROR;
     }
 
     if (joint.state_interfaces.size() != 3)
@@ -61,7 +62,7 @@ hardware_interface::return_type FDEffortHardwareInterface::configure(
         rclcpp::get_logger("FDEffortHardwareInterface"),
         "Joint '%s' has %d state interface. 3 expected.", joint.name.c_str(),
         joint.state_interfaces.size());
-      return hardware_interface::return_type::ERROR;
+      return CallbackReturn::ERROR;
     }
 
     if (joint.state_interfaces[0].name != hardware_interface::HW_IF_POSITION)
@@ -70,7 +71,7 @@ hardware_interface::return_type FDEffortHardwareInterface::configure(
         rclcpp::get_logger("FDEffortHardwareInterface"),
         "Joint '%s' have %s state interface. '%s' expected.", joint.name.c_str(),
         joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
-      return hardware_interface::return_type::ERROR;
+      return CallbackReturn::ERROR;
     }
     if (joint.state_interfaces[1].name != hardware_interface::HW_IF_VELOCITY)
     {
@@ -78,7 +79,7 @@ hardware_interface::return_type FDEffortHardwareInterface::configure(
         rclcpp::get_logger("FDEffortHardwareInterface"),
         "Joint '%s' have %s state interface. '%s' expected.", joint.name.c_str(),
         joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_VELOCITY);
-      return hardware_interface::return_type::ERROR;
+      return CallbackReturn::ERROR;
     }
     if (joint.state_interfaces[2].name != hardware_interface::HW_IF_EFFORT)
     {
@@ -86,12 +87,11 @@ hardware_interface::return_type FDEffortHardwareInterface::configure(
         rclcpp::get_logger("FDEffortHardwareInterface"),
         "Joint '%s' have %s state interface. '%s' expected.", joint.name.c_str(),
         joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_EFFORT);
-      return hardware_interface::return_type::ERROR;
+      return CallbackReturn::ERROR;
     }
   }
 
-  status_ = hardware_interface::status::CONFIGURED;
-  return hardware_interface::return_type::OK;
+  return CallbackReturn::SUCCESS;
 }
   // ------------------------------------------------------------------------------------------
 std::vector<hardware_interface::StateInterface>
@@ -133,37 +133,35 @@ FDEffortHardwareInterface::export_command_interfaces()
   return command_interfaces;
 }
   // ------------------------------------------------------------------------------------------
-hardware_interface::return_type FDEffortHardwareInterface::start()
+CallbackReturn FDEffortHardwareInterface::on_activate(const rclcpp_lifecycle::State & previous_state)
 {
   RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "Starting ...please wait...");
 
   if(connectToDevice()){
-    status_ = hardware_interface::status::STARTED;
     RCLCPP_INFO(
       rclcpp::get_logger("FDEffortHardwareInterface"), "System Successfully started!");
-    return hardware_interface::return_type::OK;
+    return CallbackReturn::SUCCESS;
   }
   else{
     RCLCPP_ERROR(
       rclcpp::get_logger("FDEffortHardwareInterface"), "System Not started!");
-    return hardware_interface::return_type::ERROR;
+    return CallbackReturn::ERROR;
   }
 }
   // ------------------------------------------------------------------------------------------
-hardware_interface::return_type FDEffortHardwareInterface::stop()
+CallbackReturn FDEffortHardwareInterface::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 {
   RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "Stopping ...please wait...");
 
   if(disconnectFromDevice()){
-    status_ = hardware_interface::status::STOPPED;
     RCLCPP_INFO(
       rclcpp::get_logger("FDEffortHardwareInterface"), "System successfully stopped!");
-    return hardware_interface::return_type::OK;
+    return CallbackReturn::SUCCESS;
   }
   else{
     RCLCPP_ERROR(
       rclcpp::get_logger("FDEffortHardwareInterface"), "System Not stopped!");
-    return hardware_interface::return_type::ERROR;
+    return CallbackReturn::ERROR;
   }
 }
   // ------------------------------------------------------------------------------------------
