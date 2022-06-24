@@ -2,33 +2,37 @@ name: Build
 
 on:
   push:
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
-
-# ros 2 ci: https://github.com/marketplace/actions/ros-2-ci-action
-# doc: https://ubuntu.com/blog/ros-2-ci-with-github-actions
+    branches: [ main ]
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+  CI:
+    runs-on: ubuntu-latest
     steps:
-      - uses: ros-tooling/setup-ros@0.2.2
+      - name: Prepare
+        run: |
+          mkdir -p ${{github.workspace}}/src
+      - uses: actions/checkout@v2
         with:
-          required-ros-distributions: galactic
-      - uses: ros-tooling/action-ros-ci@0.2.4
-        with:
-          target-ros2-distro: galactic
-          package-name:
-            fd_bringup
-            ee_pose_broadcaster
-            fd_description
-            fd_hardware
+          path: src/forcedimension_ros2
 
-      - uses: actions/upload-artifact@v2.3.1
+      - name: Build
+        uses: addnab/docker-run-action@v3
         with:
-          name: colcon-logs
-          path: ros_ws/log
-        if: always()
+          image: ros:galactic
+          options: -v ${{github.workspace}}/:/ros/
+          run: |
+            cd /ros/src/forcedimension_ros2/fd_hardware
+            mkdir external
+            cd external
+            apt update
+            apt install -y libusb-1.0-0-dev
+            apt install -y wget
+            wget https://www.forcedimension.com/downloads/sdk/sdk-3.14.0-linux-x86_64-gcc.tar.gz
+            tar xzvf sdk-3.14.0-linux-x86_64-gcc.tar.gz
+            mv sdk-3.14.0 fd_sdk
+            touch AMENT_IGNORE
+            cd /ros
+            . /opt/ros/galactic/setup.sh
+            rosdep install --ignore-src --from-paths . -y -r && \
+            colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
