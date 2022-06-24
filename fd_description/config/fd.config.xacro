@@ -1,11 +1,14 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="fd">
+    <!-- Parameters -->
+    <xacro:arg name="robot_id" default="fd"/> <!-- Name of the haptic interface -->
+    <xacro:arg name="use_fake_hardware" default="false"/>
 
-    <!-- Import iiwa urdf file -->
-    <xacro:include filename="$(find fd_description)/urdf/fd.urdf" />
+    <!-- Import interface urdf file -->
+    <xacro:include filename="$(find fd_description)/urdf/fd.urdf.xacro"/>
+    <xacro:haptic_interface robot_id="$(arg robot_id)"/>
 
-    <!-- Import iiwa ros2_control description -->
+    <!-- Import interface ros2_control description -->
     <xacro:include filename="$(find fd_description)/ros2_control/fd.r2c_hardware.xacro" />
-
-    <xacro:fd_ros2_control name="FDHapticInterface"/>
+    <xacro:fd_ros2_control plugin_name="FDHapticInterface" robot_id= "$(arg robot_id)" use_fake_hardware="$(arg use_fake_hardware)"/>
 </robot>

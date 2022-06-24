@@ -22,6 +22,7 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
+    use_fake_hardware = 'false'
 
     # Get URDF via xacro
     robot_description_content = Command(
@@ -35,6 +36,7 @@ def generate_launch_description():
                     "fd.config.xacro",
                 ]
             ),
+            ' use_fake_hardware:=', use_fake_hardware,
         ]
     )
     robot_description = {"robot_description": robot_description_content}
