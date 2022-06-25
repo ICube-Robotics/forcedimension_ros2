@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding='utf-8'?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="fd">
-    <xacro:macro name="haptic_interface" params="robot_id:='fd'">
+    <xacro:macro name="haptic_interface" params="robot_id:='fd' use_orientation:='false'">
         <link name="${robot_id}_base"/>
         <link name="${robot_id}_x_link"/>
         <link name="${robot_id}_y_link"/>
         <link name="${robot_id}_z_link"/>
+        <link name="${robot_id}_roll_link"/>
+        <link name="${robot_id}_pitch_link"/>
+        <link name="${robot_id}_yaw_link"/>
         <link name="${robot_id}_ee"/>
 
-
+        <!-- Translation -->
         <joint name="${robot_id}_x" type="prismatic">
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <parent link="${robot_id}_base"/>
@@ -29,9 +32,41 @@
             <axis xyz="0 0 1"/>
             <limit effort="12" velocity="1.0" lower="-2" upper="2" />
         </joint>
-        <joint name="tool" type="fixed">
+
+        <!-- Orientation from XYZ roll-pitch-yaw angles -->
+        <!-- TODO: change when/if floating joints are supported by ros2 control AND KDL -->
+        <xacro:if value="${use_orientation}">
+            <xacro:property name="orientation_joint_type" value="revolute" />
+        </xacro:if>
+        <xacro:unless value="${use_orientation}">
+            <xacro:property name="orientation_joint_type" value="fixed" />
+        </xacro:unless>
+        <joint name="${robot_id}_roll" type="${orientation_joint_type}">
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <parent link="${robot_id}_z_link"/>
+            <child link="${robot_id}_roll_link"/>
+            <axis xyz="1 0 0"/>
+            <limit effort="0.4" velocity="10.0" lower="-${pi}" upper="${pi}" />           
+        </joint>
+        <joint name="${robot_id}_pitch" type="${orientation_joint_type}">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <parent link="${robot_id}_roll_link"/>
+            <child link="${robot_id}_pitch_link"/>
+            <axis xyz="0 1 0"/>
+            <limit effort="0.4" velocity="10.0" lower="-${pi}" upper="${pi}" />    
+        </joint>
+        <joint name="${robot_id}_yaw" type="${orientation_joint_type}">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <parent link="${robot_id}_pitch_link"/>
+            <child link="${robot_id}_yaw_link"/>
+            <axis xyz="0 0 1"/>
+            <limit effort="0.4" velocity="10.0" lower="-${pi}" upper="${pi}" />     
+        </joint>
+
+        <!-- Tool -->
+        <joint name="${robot_id}_tool" type="fixed">
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <parent link="${robot_id}_yaw_link"/>
             <child link="${robot_id}_ee"/>
         </joint>
     </xacro:macro>
