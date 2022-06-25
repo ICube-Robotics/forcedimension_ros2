@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding='utf-8'?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="fd">
-    <xacro:macro name="haptic_interface" params="robot_id:='fd' use_orientation:='false'">
+    <xacro:macro name="haptic_interface" params="robot_id:='fd' use_orientation:='false' use_clutch:='false'">
         <link name="${robot_id}_base"/>
         <link name="${robot_id}_x_link"/>
         <link name="${robot_id}_y_link"/>
@@ -69,5 +69,18 @@
             <parent link="${robot_id}_yaw_link"/>
             <child link="${robot_id}_ee"/>
         </joint>
+
+        <!-- Clutch -->
+        <xacro:if value="${use_clutch}">
+            <link name="${robot_id}_virtual_clutch_link"/>
+            <joint name="${robot_id}_clutch" type="prismatic">
+                <origin rpy="0 0 0" xyz="0 0 0"/>
+                <parent link="${robot_id}_ee"/>
+                <child link="${robot_id}_clutch"/>
+                <axis xyz="1 0 0"/>
+            <limit effort="12" velocity="1.0" lower="-0.05" upper="0.05" />
+        </joint>
+        </xacro:if>
+
     </xacro:macro>
 </robot>
