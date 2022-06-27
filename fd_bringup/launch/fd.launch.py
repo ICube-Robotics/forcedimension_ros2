@@ -101,7 +101,7 @@ def generate_launch_description():
             description='Use fake r2c hardware interfaces'),        
         DeclareLaunchArgument(
             'use_orientation',
-            default_value='false',
+            default_value='true',
             description='Read angular positions.velocities (WARNING! RPY parameterization)'),        
         DeclareLaunchArgument(
             'use_clutch',
