@@ -6,6 +6,7 @@
     <link name="fd_y_link"/>
     <link name="fd_z_link"/>
     <link name="fd_ee"/>
+    <link name="button_link"/>
 
 
     <joint name="fd_x" type="prismatic">
@@ -33,6 +34,13 @@
         <origin rpy="0 0 0" xyz="0 0 0"/>
         <parent link="fd_z_link"/>
         <child link="fd_ee"/>
+    </joint>
+    <joint name="button" type="prismatic">
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <parent link="fd_base"/>
+        <child link="button_link"/>
+        <axis xyz="0 1 0"/>
+        <limit effort="1" velocity="1.0" lower="-2" upper="2" />
     </joint>
 
 

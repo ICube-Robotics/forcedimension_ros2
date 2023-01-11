@@ -137,6 +137,9 @@ EePoseBroadcaster::on_configure(const rclcpp_lifecycle::State & /*previous_state
 
     realtime_ee_pose_publisher_ = std::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::msg::PoseStamped>>(ee_pose_publisher_);
 
+    ee_button_publisher_=get_node()->create_publisher<example_interfaces::msg::Bool>("ee_button", rclcpp::SystemDefaultsQoS());
+
+    realtime_ee_button_publisher_=std::make_shared<realtime_tools::RealtimePublisher<example_interfaces::msg::Bool>>(ee_button_publisher_);
   }
   catch (const std::exception & e)
   {
@@ -212,6 +215,13 @@ controller_interface::return_type EePoseBroadcaster::update()
     realtime_ee_pose_publisher_->unlockAndPublish();
   }
 
+  if(realtime_ee_button_publisher_&&realtime_ee_button_publisher_->trylock())
+  {
+    auto & ee_button_msg=realtime_ee_button_publisher_->msg_;
+    double button_status=get_value(name_if_value_mapping_, "button", HW_IF_POSITION);
+    ee_button_msg.data= button_status > 0.5;
+    realtime_ee_button_publisher_->unlockAndPublish();
+  }
   return controller_interface::return_type::OK;
 }
 

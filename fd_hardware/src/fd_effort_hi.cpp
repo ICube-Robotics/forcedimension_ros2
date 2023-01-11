@@ -208,6 +208,25 @@ hardware_interface::return_type FDEffortHardwareInterface::read()
     hw_states_effort_[6] = gripper_force;
   }
 
+  //get button status
+  int button_status= dhdGetButton(0,interface_ID_);
+  if (button_status==1)
+  {
+    hw_states_position_[3]=1.0;
+    hw_states_velocity_[3]=0;
+    hw_states_effort_[3]=0;
+  }
+  else if(button_status==0)
+  {
+    hw_states_position_[3]=0.0;
+    hw_states_velocity_[3]=0;
+    hw_states_effort_[3]=0;
+  }
+  else
+  {
+    flag+=-1;
+  }
+
   if (flag >= 0) 
     return hardware_interface::return_type::OK;
   else{

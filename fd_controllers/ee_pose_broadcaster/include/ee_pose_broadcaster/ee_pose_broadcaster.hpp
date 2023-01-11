@@ -29,6 +29,7 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "realtime_tools/realtime_publisher.h"
 #include "geometry_msgs/msg/pose_stamped.hpp"
+#include "example_interfaces/msg/bool.hpp"
 
 namespace ee_pose_broadcaster
 {
@@ -67,7 +68,8 @@ protected:
   std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::PoseStamped>> ee_pose_publisher_;
   std::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::msg::PoseStamped>> realtime_ee_pose_publisher_;
   std::unordered_map<std::string, std::unordered_map<std::string, double>> name_if_value_mapping_;
-
+  std::shared_ptr<rclcpp::Publisher<example_interfaces::msg::Bool>> ee_button_publisher_;
+  std::shared_ptr<realtime_tools::RealtimePublisher<example_interfaces::msg::Bool>> realtime_ee_button_publisher_;
   Eigen::Matrix4d transform_, pose_;
   
 };

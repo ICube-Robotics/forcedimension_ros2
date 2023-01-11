@@ -26,6 +26,12 @@
                 <state_interface name="velocity"/>
                 <state_interface name="effort"/>
             </joint>
+            <joint name="button">
+                <command_interface name="effort" />
+                <state_interface name="position"/>
+                <state_interface name="velocity"/>
+                <state_interface name="effort"/>
+            </joint>
         </ros2_control>
 
     </xacro:macro>

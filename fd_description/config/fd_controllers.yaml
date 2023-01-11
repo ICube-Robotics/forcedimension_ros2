@@ -23,6 +23,7 @@ fd/fd_controller:
       - fd_x
       - fd_y
       - fd_z
+      - button
 
 fd/ee_pose_broadcaster:
   ros__parameters:
