@@ -55,6 +55,7 @@ private:
   std::vector<double> hw_states_position_;
   std::vector<double> hw_states_velocity_;
   std::vector<double> hw_states_effort_;
+  std::vector<double> hw_button_state_;
 
   /**
   Initiate the USB communication with the device.
