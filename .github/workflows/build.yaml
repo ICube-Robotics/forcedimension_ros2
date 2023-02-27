@@ -19,7 +19,7 @@ jobs:
       - name: Build
         uses: addnab/docker-run-action@v3
         with:
-          image: ros:galactic
+          image: ros:humble
           options: -v ${{github.workspace}}/:/ros/
           run: |
             cd /ros/src/forcedimension_ros2/fd_hardware
@@ -33,6 +33,6 @@ jobs:
             mv sdk-3.14.0 fd_sdk
             touch AMENT_IGNORE
             cd /ros
-            . /opt/ros/galactic/setup.sh
+            . /opt/ros/humble/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
             colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
