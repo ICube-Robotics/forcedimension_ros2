@@ -31,6 +31,8 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+
 namespace fd_hardware
 {
   // ------------------------------------------------------------------------------------------
@@ -179,7 +181,7 @@ CallbackReturn FDEffortHardwareInterface::on_deactivate(const rclcpp_lifecycle::
   }
 }
   // ------------------------------------------------------------------------------------------
-hardware_interface::return_type FDEffortHardwareInterface::read()
+hardware_interface::return_type FDEffortHardwareInterface::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   // "Success" flag
   int flag = 0;
@@ -228,7 +230,7 @@ hardware_interface::return_type FDEffortHardwareInterface::read()
   }
 }
   // ------------------------------------------------------------------------------------------
-hardware_interface::return_type FDEffortHardwareInterface::write()
+hardware_interface::return_type FDEffortHardwareInterface::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   //TODO(mcbed): write to FD system
   bool isNan = false;
