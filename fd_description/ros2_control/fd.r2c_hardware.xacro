@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro:macro name="fd_ros2_control" params="robot_id plugin_name:='FDHapticInterface' use_fake_hardware:='false' use_orientation:=false">
+    <xacro:macro name="fd_ros2_control" params="robot_id plugin_name:='FDHapticInterface' use_fake_hardware:='false' use_orientation:='false' orientation_is_actuated:='false' use_clutch:='false'">
         <ros2_control name="${plugin_name}" type="system">
             <hardware>
                 <xacro:if value="${use_fake_hardware}">
@@ -31,11 +31,20 @@
                     <joint name="${joint_name}">
                         <state_interface name="position"/>
                         <state_interface name="velocity"/>
+                        <xacro:if value="${orientation_is_actuated}">
+                            <state_interface name="effort"/> 
+                            <command_interface name="effort"/>           		 	
+                        </xacro:if>
                     </joint>
                 </xacro:macro>
                 <xacro:configure_rotation_joint joint_name="${robot_id}_roll"/>
                 <xacro:configure_rotation_joint joint_name="${robot_id}_pitch"/>
                 <xacro:configure_rotation_joint joint_name="${robot_id}_yaw"/>
+            </xacro:if>
+
+            <!-- Configure clutch -->
+            <xacro:if value="${use_clutch}">
+                <xacro:configure_translation_joint joint_name="${robot_id}_clutch"/>
             </xacro:if>
         </ros2_control>
     </xacro:macro>

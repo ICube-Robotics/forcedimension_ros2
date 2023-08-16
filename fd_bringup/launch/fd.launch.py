@@ -13,16 +13,15 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
-from launch.actions import ExecuteProcess
-
-
+from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, LaunchConfiguration
+from launch.actions import ExecuteProcess, DeclareLaunchArgument
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
-
 def generate_launch_description():
-    use_fake_hardware = 'false'
+    use_fake_hardware = LaunchConfiguration('use_fake_hardware')
+    use_orientation = LaunchConfiguration('use_orientation')
+    use_clutch = LaunchConfiguration('use_clutch')
 
     # Get URDF via xacro
     robot_description_content = Command(
@@ -37,6 +36,8 @@ def generate_launch_description():
                 ]
             ),
             ' use_fake_hardware:=', use_fake_hardware,
+            ' use_orientation:=', use_orientation,
+            ' use_clutch:=', use_clutch,
         ]
     )
     robot_description = {"robot_description": robot_description_content}
@@ -93,4 +94,17 @@ def generate_launch_description():
         node_robot_state_publisher,
         static_tf,
     ] + load_controllers
-    return LaunchDescription(nodes)
+    return LaunchDescription([        
+        DeclareLaunchArgument(
+            'use_fake_hardware',
+            default_value='false',
+            description='Use fake r2c hardware interfaces'),        
+        DeclareLaunchArgument(
+            'use_orientation',
+            default_value='true',
+            description='Read angular positions.velocities (WARNING! RPY parameterization)'),        
+        DeclareLaunchArgument(
+            'use_clutch',
+            default_value='true',
+            description='Enable clutch (read pos/vel/force and write force)'),
+        ] + nodes)

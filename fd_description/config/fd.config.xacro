@@ -4,12 +4,23 @@
     <xacro:arg name="robot_id" default="fd"/> <!-- Name of the haptic interface -->
     <xacro:arg name="use_fake_hardware" default="false"/>
     <xacro:arg name="use_orientation" default="false"/>
+    <xacro:arg name="use_clutch" default="false"/>
     
     <!-- Import interface urdf file -->
     <xacro:include filename="$(find fd_description)/urdf/fd.urdf.xacro"/>
-    <xacro:haptic_interface robot_id="$(arg robot_id)" use_orientation="$(arg use_orientation)"/>
+    <xacro:haptic_interface 
+    	robot_id="$(arg robot_id)" 
+    	use_orientation="$(arg use_orientation)" 
+    	use_clutch="$(arg use_clutch)"
+    /> 
 
-    <!-- Import interface ros2_control description -->
+    <!-- Import and setup interface ros2_control description -->
     <xacro:include filename="$(find fd_description)/ros2_control/fd.r2c_hardware.xacro" />
-    <xacro:fd_ros2_control robot_id= "$(arg robot_id)" use_fake_hardware="$(arg use_fake_hardware)" use_orientation="$(arg use_orientation)"/>
+    <xacro:fd_ros2_control 
+        robot_id= "$(arg robot_id)" 
+        use_fake_hardware="$(arg use_fake_hardware)" 
+        use_orientation="$(arg use_orientation)" 
+    	orientation_is_actuated="$(arg use_orientation)" 
+        use_clutch="$(arg use_clutch)"
+    /> <!-- orientation_is_actuated = use_orientation for now (see HW impl.) -->
 </robot>
