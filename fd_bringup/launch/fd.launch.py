@@ -64,7 +64,7 @@ def generate_launch_description():
         executable="static_transform_publisher",
         name="static_transform_publisher",
         output="log",
-        arguments=["-0.8", "0.0", "0.4", "3.1416", "0.0", "0.0", "world", "fd_base"],
+        arguments=["0.0", "0.0", "0.0", "3.1416", "0.0", "0.0", "world", "fd_base"],
     )
 
     controller_manager_node = Node(
@@ -80,7 +80,7 @@ def generate_launch_description():
 
     # Load controllers
     load_controllers = []
-    for controller in ["fd_controller", "joint_state_broadcaster", "ee_pose_broadcaster"]:
+    for controller in ["fd_controller", "joint_state_broadcaster"]:
         load_controllers += [
             ExecuteProcess(
                 cmd=[f"ros2 run controller_manager spawner --controller-manager /fd/controller_manager {controller}"],
@@ -101,7 +101,7 @@ def generate_launch_description():
             description='Use fake r2c hardware interfaces'),        
         DeclareLaunchArgument(
             'use_orientation',
-            default_value='true',
+            default_value='false',
             description='Read angular positions.velocities (WARNING! RPY parameterization)'),        
         DeclareLaunchArgument(
             'use_clutch',
