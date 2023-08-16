@@ -85,8 +85,8 @@ controller_interface::InterfaceConfiguration EePoseBroadcaster::state_interface_
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 EePoseBroadcaster::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
 {
-  auto transform_trans_param = node_->get_parameter("transform_translation").as_double_array();
-  auto transform_rot_param = node_->get_parameter("transform_rotation").as_double_array();
+  auto transform_trans_param = get_node()->get_parameter("transform_translation").as_double_array();
+  auto transform_rot_param = get_node()->get_parameter("transform_rotation").as_double_array();
   Eigen::Quaternion<double> q;
   Eigen::Vector3d trans;
 
@@ -169,7 +169,7 @@ double get_value(
   }
 }
 
-controller_interface::return_type EePoseBroadcaster::update(const rclcpp::Time & time, const rclcpp::Duration & period)
+controller_interface::return_type EePoseBroadcaster::update(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   for (const auto & state_interface : state_interfaces_)
   {

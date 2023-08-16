@@ -51,10 +51,10 @@ public:
   CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
   FD_HARDWARE_PUBLIC
-  hardware_interface::return_type read() override;
+  hardware_interface::return_type read(const rclcpp::Time &, const rclcpp::Duration &) override;
 
   FD_HARDWARE_PUBLIC
-  hardware_interface::return_type write() override;
+  hardware_interface::return_type write(const rclcpp::Time &, const rclcpp::Duration &) override;
 
 private:
 
