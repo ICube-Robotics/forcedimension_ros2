@@ -1,33 +1,51 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-
-    <xacro:macro name="fd_ros2_control" params="name">
-
-        <ros2_control name="${name}" type="system">
+    <xacro:macro name="fd_ros2_control" params="robot_id plugin_name:='FDHapticInterface' use_fake_hardware:='false' use_orientation:='false' orientation_is_actuated:='false' use_clutch:='false'">
+        <ros2_control name="${plugin_name}" type="system">
             <hardware>
-                <plugin>fd_hardware/FDEffortHardwareInterface</plugin>
-                <param name="interface_ID">-1</param>
+                <xacro:if value="${use_fake_hardware}">
+                    <plugin>fake_components/GenericSystem</plugin>
+                </xacro:if>
+                <xacro:unless value="${use_fake_hardware}">
+                    <plugin>fd_hardware/FDEffortHardwareInterface</plugin>
+                    <param name="interface_ID">-1</param>
+                </xacro:unless>
             </hardware>
-            <joint name="fd_x">
-                <command_interface name="effort" />
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-                <state_interface name="effort"/>
-            </joint>
-            <joint name="fd_y">
-                <command_interface name="effort" />
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-                <state_interface name="effort"/>
-            </joint>
-            <joint name="fd_z">
-                <command_interface name="effort" />
-                <state_interface name="position"/>
-                <state_interface name="velocity"/>
-                <state_interface name="effort"/>
-            </joint>
+
+            <!-- Configure translations -->
+            <xacro:macro name="configure_translation_joint" params="joint_name">
+                <joint name="${joint_name}">
+                    <command_interface name="effort"/>
+                    <state_interface name="position"/>
+                    <state_interface name="velocity"/>
+                    <state_interface name="effort"/>
+                </joint>
+            </xacro:macro>
+            <xacro:configure_translation_joint joint_name="${robot_id}_x"/>
+            <xacro:configure_translation_joint joint_name="${robot_id}_y"/>
+            <xacro:configure_translation_joint joint_name="${robot_id}_z"/>
+
+            <!-- Configure orientation (read-only!) -->
+            <xacro:if value="${use_orientation}">
+                <xacro:macro name="configure_rotation_joint" params="joint_name">
+                    <joint name="${joint_name}">
+                        <state_interface name="position"/>
+                        <state_interface name="velocity"/>
+                        <xacro:if value="${orientation_is_actuated}">
+                            <state_interface name="effort"/> 
+                            <command_interface name="effort"/>           		 	
+                        </xacro:if>
+                    </joint>
+                </xacro:macro>
+                <xacro:configure_rotation_joint joint_name="${robot_id}_roll"/>
+                <xacro:configure_rotation_joint joint_name="${robot_id}_pitch"/>
+                <xacro:configure_rotation_joint joint_name="${robot_id}_yaw"/>
+            </xacro:if>
+
+            <!-- Configure clutch -->
+            <xacro:if value="${use_clutch}">
+                <xacro:configure_translation_joint joint_name="${robot_id}_clutch"/>
+            </xacro:if>
         </ros2_control>
-
     </xacro:macro>
-
 </robot>

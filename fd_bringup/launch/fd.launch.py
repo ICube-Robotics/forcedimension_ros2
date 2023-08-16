@@ -13,15 +13,15 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
-from launch.actions import ExecuteProcess
-
-
+from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, LaunchConfiguration
+from launch.actions import ExecuteProcess, DeclareLaunchArgument
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
-
 def generate_launch_description():
+    use_fake_hardware = LaunchConfiguration('use_fake_hardware')
+    use_orientation = LaunchConfiguration('use_orientation')
+    use_clutch = LaunchConfiguration('use_clutch')
 
     # Get URDF via xacro
     robot_description_content = Command(
@@ -35,6 +35,9 @@ def generate_launch_description():
                     "fd.config.xacro",
                 ]
             ),
+            ' use_fake_hardware:=', use_fake_hardware,
+            ' use_orientation:=', use_orientation,
+            ' use_clutch:=', use_clutch,
         ]
     )
     robot_description = {"robot_description": robot_description_content}
@@ -61,7 +64,7 @@ def generate_launch_description():
         executable="static_transform_publisher",
         name="static_transform_publisher",
         output="log",
-        arguments=["-0.8", "0.0", "0.4", "3.1416", "0.0", "0.0", "world", "fd_base"],
+        arguments=["0.0", "0.0", "0.0", "3.1416", "0.0", "0.0", "world", "fd_base"],
     )
 
     controller_manager_node = Node(
@@ -77,7 +80,7 @@ def generate_launch_description():
 
     # Load controllers
     load_controllers = []
-    for controller in ["fd_controller", "joint_state_broadcaster", "ee_pose_broadcaster"]:
+    for controller in ["fd_controller", "joint_state_broadcaster"]:
         load_controllers += [
             ExecuteProcess(
                 cmd=[f"ros2 run controller_manager spawner --controller-manager /fd/controller_manager {controller}"],
@@ -91,4 +94,17 @@ def generate_launch_description():
         node_robot_state_publisher,
         static_tf,
     ] + load_controllers
-    return LaunchDescription(nodes)
+    return LaunchDescription([        
+        DeclareLaunchArgument(
+            'use_fake_hardware',
+            default_value='false',
+            description='Use fake r2c hardware interfaces'),        
+        DeclareLaunchArgument(
+            'use_orientation',
+            default_value='false',
+            description='Read angular positions.velocities (WARNING! RPY parameterization)'),        
+        DeclareLaunchArgument(
+            'use_clutch',
+            default_value='true',
+            description='Enable clutch (read pos/vel/force and write force)'),
+        ] + nodes)

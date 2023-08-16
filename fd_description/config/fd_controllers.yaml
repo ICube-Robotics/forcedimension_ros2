@@ -8,9 +8,6 @@ fd/controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-    ee_pose_broadcaster:
-      type: ee_pose_broadcaster/EePoseBroadcaster
-
 fd/fd_controller:
   ros__parameters:
     command_interfaces:
@@ -23,8 +20,9 @@ fd/fd_controller:
       - fd_x
       - fd_y
       - fd_z
+    ## Note: uncomment the following if using an omega 6/7 device
+    #  - fd_roll
+    #  - fd_pitch
+    #  - fd_yaw
+    #  - fd_clutch
 
-fd/ee_pose_broadcaster:
-  ros__parameters:
-    transform_translation: [0.0,0.0,0.0]
-    transform_rotation: [0.0,1.5707,0.0] # rpy or quaternion
