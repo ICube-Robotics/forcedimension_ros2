@@ -16,44 +16,28 @@ find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(fd_sdk_vendor REQUIRED)
 
-set(EXT_LIBS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/fd_sdk")
-include_directories("${EXT_LIBS_DIR}/include")
-
-
-
-## COMPILE
+## Setup target
 add_library(
   ${PROJECT_NAME}
   SHARED
   src/fd_effort_hi.cpp
 )
-
-# DHD
-  #-----------------
-add_library(dhd STATIC IMPORTED dhdc.h)
-set_property(TARGET dhd PROPERTY IMPORTED_LOCATION "${EXT_LIBS_DIR}/lib/release/lin-x86_64-gcc/libdhd.a")
-# DRD
-#-----------------
-add_library(drd STATIC IMPORTED drdc.h)
-set_property(TARGET drd PROPERTY IMPORTED_LOCATION "${EXT_LIBS_DIR}/lib/release/lin-x86_64-gcc/libdrd.a")
-
-
 target_include_directories(
   ${PROJECT_NAME}
   PRIVATE
   include
-  ${EXT_LIBS_DIR}/include
 )
-ament_target_dependencies(
-  ${PROJECT_NAME}
+set(DEPENDENCIES
+  fd_sdk_vendor
   hardware_interface
   pluginlib
   rclcpp
   rclcpp_lifecycle
 )
 
-target_link_libraries(${PROJECT_NAME} dhd drd usb-1.0)
+ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
 
 pluginlib_export_plugin_description_file(hardware_interface fd_hardware_plugin.xml)
 
@@ -82,10 +66,5 @@ ament_export_include_directories(
 ament_export_libraries(
   ${PROJECT_NAME}
 )
-ament_export_dependencies(
-  hardware_interface
-  pluginlib
-  rclcpp
-  rclcpp_lifecycle
-)
+ament_export_dependencies(${DEPENDENCIES})
 ament_package()
