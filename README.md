@@ -1,6 +1,12 @@
 # forcedimension_ros2
 This stack includes `ros2_control` drivers for Force Dimension SDK compatible haptic interfaces.
 
+> **Warning**
+> 
+> The vendor package [fd_sdk_vendor](https://github.com/ICube-Robotics/fd_sdk_vendor.git) is now required!
+> Please follow the installation steps carefully.
+
+
 ## Compatible devices
 The driver was currently tested on the following haptic devices:
 - Force Dimension [Omega.3](https://www.forcedimension.com/products/omega), [Omega.6](https://www.forcedimension.com/products/omega) and [Omega.7](https://www.forcedimension.com/products/omega)
