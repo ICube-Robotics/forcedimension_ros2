@@ -1,3 +1,0 @@
-[submodule "fd_sdk_vendor"]
-	path = fd_sdk_vendor
-	url = https://github.com/ICube-Robotics/fd_sdk_vendor.git
