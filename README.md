@@ -28,6 +28,7 @@ The driver was currently tested on the following haptic devices:
     ```shell
     cd ~/ros2_ws
     git clone https://github.com/ICube-Robotics/forcedimension_ros2.git src/forcedimension_ros2
+    git submodule update --init --recursive
     rosdep install --ignore-src --from-paths . -y -r
     ```
 5. Download the newest version of Force Dimension [SDK](https://www.forcedimension.com/software/sdk) and copy its content in the `fd_hardware/external/fd_sdk` directory.
