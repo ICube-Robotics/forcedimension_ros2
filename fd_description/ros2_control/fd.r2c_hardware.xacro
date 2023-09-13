@@ -32,8 +32,8 @@
                         <state_interface name="position"/>
                         <state_interface name="velocity"/>
                         <xacro:if value="${orientation_is_actuated}">
-                            <state_interface name="effort"/> 
-                            <command_interface name="effort"/>           		 	
+                            <state_interface name="effort"/>
+                            <command_interface name="effort"/>
                         </xacro:if>
                     </joint>
                 </xacro:macro>
