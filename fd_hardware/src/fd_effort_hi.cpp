@@ -58,7 +58,7 @@ CallbackReturn FDEffortHardwareInterface::on_init(
     {
       RCLCPP_FATAL(
         rclcpp::get_logger("FDEffortHardwareInterface"),
-        "Joint '%s' has %d command interfaces found. 1 expected.", joint.name.c_str(),
+        "Joint '%s' has %lu command interfaces found. 1 expected.", joint.name.c_str(),
         joint.command_interfaces.size());
       return CallbackReturn::ERROR;
     }
@@ -76,7 +76,7 @@ CallbackReturn FDEffortHardwareInterface::on_init(
     {
       RCLCPP_FATAL(
         rclcpp::get_logger("FDEffortHardwareInterface"),
-        "Joint '%s' has %d state interface. 3 expected.", joint.name.c_str(),
+        "Joint '%s' has %ld state interface. 3 expected.", joint.name.c_str(),
         joint.state_interfaces.size());
       return CallbackReturn::ERROR;
     }
@@ -151,6 +151,8 @@ FDEffortHardwareInterface::export_command_interfaces()
   // ------------------------------------------------------------------------------------------
 CallbackReturn FDEffortHardwareInterface::on_activate(const rclcpp_lifecycle::State & previous_state)
 {
+  (void)previous_state; // hush "-Wunused-parameter" warning
+
   RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "Starting ...please wait...");
 
   if(connectToDevice()){
@@ -167,6 +169,7 @@ CallbackReturn FDEffortHardwareInterface::on_activate(const rclcpp_lifecycle::St
   // ------------------------------------------------------------------------------------------
 CallbackReturn FDEffortHardwareInterface::on_deactivate(const rclcpp_lifecycle::State & previous_state)
 {
+  (void)previous_state; // hush "-Wunused-parameter" warning
   RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "Stopping ...please wait...");
 
   if(disconnectFromDevice()){
@@ -275,7 +278,7 @@ bool FDEffortHardwareInterface::connectToDevice(){
       // Retrieve the mass of the device
       double effector_mass = 0.0;
       if (dhdGetEffectorMass(&effector_mass,interface_ID_) == DHD_NO_ERROR) {
-          RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Effector Mass = %sg",std::to_string(effector_mass*1000.0));
+          RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Effector Mass = %f (g)", effector_mass*1000.0);
       }
       else {
           RCLCPP_WARN(rclcpp::get_logger("FDEffortHardwareInterface"),"dhd : Impossible to retrieve effector mass !");
