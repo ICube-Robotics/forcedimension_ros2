@@ -26,7 +26,7 @@
 #include "fd_hardware/fd_effort_hi.hpp"
 
 #include "fd_sdk_vendor/dhd.hpp"
-#include "fd_sdk_vendor/drdc.hpp"
+#include "fd_sdk_vendor/drd.hpp"
 
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
