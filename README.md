@@ -16,7 +16,7 @@ The driver was currently tested on the following haptic devices:
 ### Getting Started
 ***Required setup : Ubuntu 22.04 LTS***
 
-1.  Install `ros2` packages. The current developpment is based of `ros2 humble`. Installation steps are decribed [here](https://docs.ros.org/en/humble/Installation.html).
+1.  Install `ros2` packages. The current development is based of `ros2 humble`. Installation steps are described [here](https://docs.ros.org/en/humble/Installation.html).
 2. Source your `ros2` environment:
     ```shell
     source /opt/ros/humble/setup.bash

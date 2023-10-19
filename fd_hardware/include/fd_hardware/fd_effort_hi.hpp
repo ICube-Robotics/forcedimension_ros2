@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FD_HARDWARE__FD_EFFORT_HI
-#define FD_HARDWARE__FD_EFFORT_HI
+#ifndef FD_HARDWARE__FD_EFFORT_HI_HPP_
+#define FD_HARDWARE__FD_EFFORT_HI_HPP_
 
 #include <memory>
 #include <string>
@@ -57,8 +57,7 @@ public:
   hardware_interface::return_type write(const rclcpp::Time &, const rclcpp::Duration &) override;
 
 private:
-
-  // ID of the interface (Rq: "-1" = unvalid/any that is connected)
+  // ID of the interface (Rq: "-1" = invalid/any that is connected)
   char interface_ID_ = -1;
   // Turned to true after the connection
   bool isConnected_ = false;
@@ -72,7 +71,7 @@ private:
   /**
   Initiate the USB communication with the device.
   Warning: Once this method is called, the forces are enable on the device...
-  @return flag = true if has succeded
+  @return flag = true if has succeeded
   */
   bool connectToDevice();
 
@@ -80,12 +79,12 @@ private:
   Terminate the USB communication with the device.
   See disconnectFromDevice(std_msgs::msg::String& str) for details.
 
-  @return flag = true if has succeded
+  @return flag = true if has succeeded
   */
   bool disconnectFromDevice();
-
 };
 
-}  // namespace FD_HARDWARE
 
-#endif  // FD_HARDWARE__FD_EFFORT_HI
+}  // namespace fd_hardware
+
+#endif  // FD_HARDWARE__FD_EFFORT_HI_HPP_
