@@ -2,7 +2,7 @@
 This stack includes `ros2_control` drivers for Force Dimension SDK compatible haptic interfaces.
 
 > **Warning**
-> 
+>
 > The vendor package [fd_sdk_vendor](https://github.com/ICube-Robotics/fd_sdk_vendor.git) is now required!
 > Please follow the installation steps carefully.
 
@@ -30,7 +30,7 @@ The driver was currently tested on the following haptic devices:
     ```shell
     mkdir ~/ros2_ws/src
     ```
-4. Pull relevant packages, install dependencies by using :
+4. Pull relevant packages, install dependencies (including the vendor pkg [fd_sdk_vendor](https://github.com/ICube-Robotics/fd_sdk_vendor.git)):
     ```shell
     cd ~/ros2_ws
     cd src
@@ -38,7 +38,6 @@ The driver was currently tested on the following haptic devices:
     vcs import . < forcedimension_ros2/forcedimension_ros2.repos
     rosdep install --ignore-src --from-paths . -y -r
     ```
-5. Download the newest version of Force Dimension [SDK](https://www.forcedimension.com/software/sdk) and copy its content in the `fd_hardware/external/fd_sdk` directory.
 6. Compile and source the workspace by using:
     ```shell
     colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install
