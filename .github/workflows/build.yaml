@@ -22,16 +22,10 @@ jobs:
           image: ros:humble
           options: -v ${{github.workspace}}/:/ros/
           run: |
-            cd /ros/src/forcedimension_ros2/fd_hardware
-            mkdir external
-            cd external
             apt update
             apt install -y libusb-1.0-0-dev
-            apt install -y wget
-            wget https://www.forcedimension.com/downloads/sdk/sdk-3.14.0-linux-x86_64-gcc.tar.gz
-            tar xzvf sdk-3.14.0-linux-x86_64-gcc.tar.gz
-            mv sdk-3.14.0 fd_sdk
-            touch AMENT_IGNORE
+            cd /ros/src/
+            vcs import . < forcedimension_ros2/forcedimension_ros2.repos
             cd /ros
             . /opt/ros/humble/setup.sh
             rosdep install --ignore-src --from-paths . -y -r && \
