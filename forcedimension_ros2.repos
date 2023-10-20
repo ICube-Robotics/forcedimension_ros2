@@ -1,0 +1,5 @@
+repositories:
+  fd_sdk_vendor:
+    type: git
+    url: https://github.com/ICube-Robotics/fd_sdk_vendor.git
+    version: main

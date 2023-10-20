@@ -18,6 +18,7 @@ from launch.actions import ExecuteProcess, DeclareLaunchArgument
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+
 def generate_launch_description():
     use_fake_hardware = LaunchConfiguration('use_fake_hardware')
     use_orientation = LaunchConfiguration('use_orientation')
@@ -94,15 +95,15 @@ def generate_launch_description():
         node_robot_state_publisher,
         static_tf,
     ] + load_controllers
-    return LaunchDescription([        
+    return LaunchDescription([
         DeclareLaunchArgument(
             'use_fake_hardware',
             default_value='false',
-            description='Use fake r2c hardware interfaces'),        
+            description='Use fake r2c hardware interfaces'),
         DeclareLaunchArgument(
             'use_orientation',
             default_value='false',
-            description='Read angular positions.velocities (WARNING! RPY parameterization)'),        
+            description='Read angular positions.velocities (WARNING! RPY parameterization)'),
         DeclareLaunchArgument(
             'use_clutch',
             default_value='true',

@@ -46,21 +46,21 @@
             <parent link="${robot_id}_z_link"/>
             <child link="${robot_id}_roll_link"/>
             <axis xyz="1 0 0"/>
-            <limit effort="0.4" velocity="10.0" lower="-${pi}" upper="${pi}" />           
+            <limit effort="0.4" velocity="10.0" lower="-${pi}" upper="${pi}" />
         </joint>
         <joint name="${robot_id}_pitch" type="${orientation_joint_type}">
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <parent link="${robot_id}_roll_link"/>
             <child link="${robot_id}_pitch_link"/>
             <axis xyz="0 1 0"/>
-            <limit effort="0.4" velocity="10.0" lower="-${pi}" upper="${pi}" />    
+            <limit effort="0.4" velocity="10.0" lower="-${pi}" upper="${pi}" />
         </joint>
         <joint name="${robot_id}_yaw" type="${orientation_joint_type}">
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <parent link="${robot_id}_pitch_link"/>
             <child link="${robot_id}_yaw_link"/>
             <axis xyz="0 0 1"/>
-            <limit effort="0.4" velocity="10.0" lower="-${pi}" upper="${pi}" />     
+            <limit effort="0.4" velocity="10.0" lower="-${pi}" upper="${pi}" />
         </joint>
 
         <!-- Tool -->

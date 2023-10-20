@@ -15,13 +15,13 @@
 #ifndef EE_POSE_BROADCASTER__EE_POSE_BROADCASTER_HPP_
 #define EE_POSE_BROADCASTER__EE_POSE_BROADCASTER_HPP_
 
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
-
 
 #include "controller_interface/controller_interface.hpp"
 #include "ee_pose_broadcaster/visibility_control.h"
@@ -48,7 +48,9 @@ public:
   controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
   EE_POSE_BROADCASTER_PUBLIC
-  controller_interface::return_type update(const rclcpp::Time & time, const rclcpp::Duration & period) override;
+  controller_interface::return_type update(
+    const rclcpp::Time & time,
+    const rclcpp::Duration & period) override;
 
   EE_POSE_BROADCASTER_PUBLIC
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_configure(
@@ -65,11 +67,11 @@ public:
 protected:
   //  For the PoseStamped message,
   std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::PoseStamped>> ee_pose_publisher_;
-  std::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::msg::PoseStamped>> realtime_ee_pose_publisher_;
+  std::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::msg::PoseStamped>>
+  realtime_ee_pose_publisher_;
   std::unordered_map<std::string, std::unordered_map<std::string, double>> name_if_value_mapping_;
 
   Eigen::Matrix4d transform_, pose_;
-
 };
 
 }  // namespace ee_pose_broadcaster

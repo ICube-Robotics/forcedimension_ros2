@@ -1,6 +1,12 @@
 # forcedimension_ros2
 This stack includes `ros2_control` drivers for Force Dimension SDK compatible haptic interfaces.
 
+> **Warning**
+>
+> The vendor package [fd_sdk_vendor](https://github.com/ICube-Robotics/fd_sdk_vendor.git) is now required!
+> Please follow the installation steps carefully.
+
+
 ## Compatible devices
 The driver was currently tested on the following haptic devices:
 - Force Dimension [Omega.3](https://www.forcedimension.com/products/omega), [Omega.6](https://www.forcedimension.com/products/omega) and [Omega.7](https://www.forcedimension.com/products/omega)
@@ -10,7 +16,7 @@ The driver was currently tested on the following haptic devices:
 ### Getting Started
 ***Required setup : Ubuntu 22.04 LTS***
 
-1.  Install `ros2` packages. The current developpment is based of `ros2 humble`. Installation steps are decribed [here](https://docs.ros.org/en/humble/Installation.html).
+1.  Install `ros2` packages. The current development is based of `ros2 humble`. Installation steps are described [here](https://docs.ros.org/en/humble/Installation.html).
 2. Source your `ros2` environment:
     ```shell
     source /opt/ros/humble/setup.bash
@@ -24,13 +30,14 @@ The driver was currently tested on the following haptic devices:
     ```shell
     mkdir ~/ros2_ws/src
     ```
-4. Pull relevant packages, install dependencies by using :
+4. Pull relevant packages, install dependencies (including the vendor pkg [fd_sdk_vendor](https://github.com/ICube-Robotics/fd_sdk_vendor.git)):
     ```shell
     cd ~/ros2_ws
-    git clone https://github.com/ICube-Robotics/forcedimension_ros2.git src/forcedimension_ros2
+    cd src
+    git clone https://github.com/ICube-Robotics/forcedimension_ros2.git
+    vcs import . < forcedimension_ros2/forcedimension_ros2.repos
     rosdep install --ignore-src --from-paths . -y -r
     ```
-5. Download the newest version of Force Dimension [SDK](https://www.forcedimension.com/software/sdk) and copy its content in the `fd_hardware/external/fd_sdk` directory.
 6. Compile and source the workspace by using:
     ```shell
     colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install
