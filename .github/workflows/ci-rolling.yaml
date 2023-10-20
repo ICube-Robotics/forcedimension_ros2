@@ -16,7 +16,7 @@ jobs:
           mkdir -p ${{github.workspace}}/src
       - name: Display dir tree
         run: |
-          apt install -y tree |
+          apt install -y tree
           tree -L 2
       - uses: actions/checkout@v4
         with:
