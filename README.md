@@ -50,6 +50,13 @@ An example launch file is provided with this stack in the `fd_bringup` package. 
 ros2 launch fd_bringup fd.launch.py
 ```
 The device end-effector pose can then be found in the `/fd/ee_pose` and wrench can be set on the `/fd_controller/commands` topic.
+Note that __the default launch config is for the Omega 3 device__ (orientation and clutch OFF).
+
+You can test the readings using [plotjuggler](https://plotjuggler.io/) and the force control by requesting a (small) force along X axis:
+```bash
+ros2 topic pub -r 1000 \
+     /fd/fd_controller/commands std_msgs/msg/Float64MultiArray "data: [0.5, 0.0, 0.0]"
+```
 
 ## Practical information
 
