@@ -13,9 +13,9 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.substitutions import Command, FindExecutable
-from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch.actions import ExecuteProcess, DeclareLaunchArgument
+from launch.substitutions import Command, FindExecutable
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -28,13 +28,13 @@ def generate_launch_description():
     # Get URDF via xacro
     robot_description_content = Command(
         [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
-            " ",
+            PathJoinSubstitution([FindExecutable(name='xacro')]),
+            ' ',
             PathJoinSubstitution(
                 [
-                    FindPackageShare("fd_description"),
-                    "config",
-                    "fd.config.xacro",
+                    FindPackageShare('fd_description'),
+                    'config',
+                    'fd.config.xacro',
                 ]
             ),
             ' use_fake_hardware:=', use_fake_hardware,
@@ -42,59 +42,59 @@ def generate_launch_description():
             ' use_clutch:=', use_clutch,
         ]
     )
-    robot_description = {"robot_description": robot_description_content}
+    robot_description = {'robot_description': robot_description_content}
 
     phi_controllers = PathJoinSubstitution(
         [
-            FindPackageShare("fd_description"),
-            "config",
-            "fd_controllers.yaml",
+            FindPackageShare('fd_description'),
+            'config',
+            'fd_controllers.yaml',
         ]
     )
 
     node_robot_state_publisher = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        namespace="fd",
-        output="screen",
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        namespace='fd',
+        output='screen',
         parameters=[robot_description],
     )
 
     # A node to publish world -> iiwa_base transform
     static_tf = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="static_transform_publisher",
-        output="log",
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_transform_publisher',
+        output='log',
         arguments=[
-            "0.0", "0.0", "0.0", "3.1416", "0.0", "0.0",
-            "world",
-            "fd_base"
+            '0.0', '0.0', '0.0', '3.1416', '0.0', '0.0',
+            'world',
+            'fd_base'
         ],
     )
 
     controller_manager_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        namespace="fd",
+        package='controller_manager',
+        executable='ros2_control_node',
+        namespace='fd',
         parameters=[robot_description, phi_controllers],
         output={
-            "stdout": "screen",
-            "stderr": "screen",
+            'stdout': 'screen',
+            'stderr': 'screen',
         },
     )
 
     # Load controllers
     load_controllers = []
-    for controller in ["fd_controller", "joint_state_broadcaster"]:
+    for controller in ['fd_controller', 'joint_state_broadcaster']:
         load_controllers += [
             ExecuteProcess(
                 cmd=[
-                    "ros2 run controller_manager spawner" +
-                    f"--controller-manager /fd/controller_manager {controller}"
+                    'ros2 run controller_manager spawner' +
+                    f'--controller-manager /fd/controller_manager {controller}'
                 ],
                 shell=True,
-                output="screen",
+                output='screen',
             )
         ]
 
