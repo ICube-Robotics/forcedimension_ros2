@@ -5,7 +5,7 @@ This stack includes `ros2_control` drivers for Force Dimension SDK compatible ha
 ***Tested with a Humble ROS distribution only (Ubuntu 22.04 LTS)***
 
 [![Licence](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CI (humble)](https://github.com/ICube-Robotics/forcedimension_ros2/actions/workflows/ci.yml/badge.svg)](https://github.com/ICube-Robotics/forcedimension_ros2/actions/workflows/ci.yml)
+[![CI (humble)](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 [![Build tests (iron)](../../actions/workflows/ci-iron.yaml/badge.svg?branch=main)](../../actions/workflows/ci-iron.yaml?query=branch:main)
 [![Build tests (rolling)](../../actions/workflows/ci-rolling.yaml/badge.svg?branch=main)](../../actions/workflows/ci-rolling.yaml?query=branch:main)
 
