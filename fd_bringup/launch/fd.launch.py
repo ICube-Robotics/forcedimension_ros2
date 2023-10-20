@@ -106,6 +106,6 @@ def generate_launch_description():
             description='Read angular positions.velocities (WARNING! RPY parameterization)'),
         DeclareLaunchArgument(
             'use_clutch',
-            default_value='true',
+            default_value='false',
             description='Enable clutch (read pos/vel/force and write force)'),
         ] + nodes)
