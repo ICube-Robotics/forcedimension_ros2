@@ -33,7 +33,7 @@ jobs:
       - name: Tests
         uses: addnab/docker-run-action@v3
         with:
-          image: cartesian_controllers_ros2:humble
+          image: ros:humble
           options: -v ${{github.workspace}}/:/ros/
           run: |
             apt update
