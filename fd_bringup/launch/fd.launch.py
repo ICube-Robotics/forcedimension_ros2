@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, LaunchConfiguration
+from launch.substitutions import Command, FindExecutable
+from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
 from launch.actions import ExecuteProcess, DeclareLaunchArgument
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -65,7 +66,11 @@ def generate_launch_description():
         executable="static_transform_publisher",
         name="static_transform_publisher",
         output="log",
-        arguments=["0.0", "0.0", "0.0", "3.1416", "0.0", "0.0", "world", "fd_base"],
+        arguments=[
+            "0.0", "0.0", "0.0", "3.1416", "0.0", "0.0",
+            "world",
+            "fd_base"
+        ],
     )
 
     controller_manager_node = Node(
@@ -84,7 +89,10 @@ def generate_launch_description():
     for controller in ["fd_controller", "joint_state_broadcaster"]:
         load_controllers += [
             ExecuteProcess(
-                cmd=[f"ros2 run controller_manager spawner --controller-manager /fd/controller_manager {controller}"],
+                cmd=[
+                    "ros2 run controller_manager spawner" +
+                    f"--controller-manager /fd/controller_manager {controller}"
+                ],
                 shell=True,
                 output="screen",
             )
@@ -103,7 +111,9 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'use_orientation',
             default_value='false',
-            description='Read angular positions.velocities (WARNING! RPY parameterization)'),
+            description='Read angular positions.velocities'
+                        + '(WARNING! RPY parameterization)'
+        ),
         DeclareLaunchArgument(
             'use_clutch',
             default_value='false',
