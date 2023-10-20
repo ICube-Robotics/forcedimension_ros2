@@ -1,0 +1,60 @@
+name: CI (humble)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare
+        run: |
+          mkdir -p ${{github.workspace}}/src
+      - uses: actions/checkout@v2
+        with:
+          path: src/forcedimension_ros2
+
+      - name: Build
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ros:humble
+          options: -v ${{github.workspace}}/:/ros/
+          run: |
+            apt update
+            cd /ros/src/
+            vcs import . < forcedimension_ros2/forcedimension_ros2.repos
+            cd /ros
+            . /opt/ros/humble/setup.sh
+            rosdep install --ignore-src --from-paths . -y -r && \
+            colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install
+
+      - name: Tests
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ros:humble
+          options: -v ${{github.workspace}}/:/ros/
+          run: |
+            apt update
+            cd /ros/src/
+            vcs import . < forcedimension_ros2/forcedimension_ros2.repos
+            cd /ros
+            . /opt/ros/humble/setup.sh
+            rosdep install --ignore-src --from-paths . -y -r && \
+            colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install
+            colcon test
+            colcon test-result
+
+      - name: Upload Tests to Artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: build/*/test_results/*/*.xml
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: build/*/test_results/*/*.xml

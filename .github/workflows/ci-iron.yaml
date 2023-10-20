@@ -1,0 +1,21 @@
+name: CI (iron)
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:jammy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          use-ros2-testing: true
+      - uses: ros-tooling/action-ros-ci@v0.3
+        with:
+          target-ros2-distro: iron
+          vcs-repo-file-url: ./forcedimension_ros2.repos
