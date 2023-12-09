@@ -13,9 +13,13 @@
 # limitations under the License.
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess
-from launch.substitutions import Command, FindExecutable
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import (
+    Command,
+    FindExecutable,
+    LaunchConfiguration,
+    PathJoinSubstitution,
+)
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
@@ -88,14 +92,16 @@ def generate_launch_description():
     load_controllers = []
     for controller in ['fd_controller', 'joint_state_broadcaster']:
         load_controllers += [
-            ExecuteProcess(
-                cmd=[
-                    'ros2 run controller_manager spawner' +
-                    f'--controller-manager /fd/controller_manager {controller}'
+            Node(
+                package='controller_manager',
+                executable='spawner',
+                namespace='fd',
+                arguments=[
+                    controller,
+                    '--controller-manager',
+                    '/fd/controller_manager',
                 ],
-                shell=True,
-                output='screen',
-            )
+            ),
         ]
 
     nodes = [
