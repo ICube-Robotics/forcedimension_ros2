@@ -35,6 +35,14 @@ using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 
 namespace fd_hardware
 {
+
+FDEffortHardwareInterface::~FDEffortHardwareInterface()
+{
+  // If controller manager is shutdown via Ctrl + C, the on_deactivate methods won't be called.
+  // We need to call them here to ensure that the device is stopped and disconnected.
+  on_deactivate(rclcpp_lifecycle::State());
+}
+
 // ------------------------------------------------------------------------------------------
 CallbackReturn FDEffortHardwareInterface::on_init(
   const hardware_interface::HardwareInfo & info)

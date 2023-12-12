@@ -35,6 +35,8 @@ class FDEffortHardwareInterface : public hardware_interface::SystemInterface
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(FDEffortHardwareInterface);
 
+  virtual ~FDEffortHardwareInterface();
+
   FD_HARDWARE_PUBLIC
   CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
 
