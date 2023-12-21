@@ -175,9 +175,29 @@ controller_interface::return_type EePoseBroadcaster::update(
 
   if (realtime_ee_pose_publisher_ && realtime_ee_pose_publisher_->trylock()) {
     pose_ = Eigen::Matrix4d::Identity();
-    pose_(0, 3) = get_value(name_if_value_mapping_, "fd_x", HW_IF_POSITION);
-    pose_(1, 3) = get_value(name_if_value_mapping_, "fd_y", HW_IF_POSITION);
-    pose_(2, 3) = get_value(name_if_value_mapping_, "fd_z", HW_IF_POSITION);
+
+    double p_x = get_value(name_if_value_mapping_, "fd_x", HW_IF_POSITION);
+    double p_y = get_value(name_if_value_mapping_, "fd_y", HW_IF_POSITION);
+    double p_z = get_value(name_if_value_mapping_, "fd_z", HW_IF_POSITION);
+    double roll = get_value(name_if_value_mapping_, "fd_roll", HW_IF_POSITION);
+    double pitch = get_value(name_if_value_mapping_, "fd_pitch", HW_IF_POSITION);
+    double yaw = get_value(name_if_value_mapping_, "fd_yaw", HW_IF_POSITION);
+
+    std::cout << "x: " << p_x << std::endl;
+
+    if (std::isnan(p_x) || std::isnan(p_y) || std::isnan(p_z)) {
+      RCLCPP_DEBUG(
+        get_node()->get_logger(), "Failled to retrieve fd pose! (fd_x, fd_y, fd_z)!");
+      return controller_interface::return_type::ERROR;
+    }
+    pose_(0, 3) = p_x;
+    pose_(1, 3) = p_y;
+    pose_(2, 3) = p_z;
+
+    if (!std::isnan(roll) && !std::isnan(pitch) && !std::isnan(yaw)) {
+      // TODO(tpoignonec): retrieve actual orientation
+      pose_.block<3, 3>(0, 0) = Eigen::Matrix3d::Zero();
+    }
 
     pose_ = transform_ * pose_;
     Eigen::Quaternion<double> q(pose_.block<3, 3>(0, 0));
