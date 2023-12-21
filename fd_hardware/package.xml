@@ -16,6 +16,7 @@
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
   <depend>fd_sdk_vendor</depend>
+  <depend>effort_controllers</depend>
 
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>xacro</exec_depend>
