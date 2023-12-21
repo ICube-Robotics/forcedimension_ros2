@@ -5,6 +5,9 @@ fd/controller_manager:
     fd_controller:
       type: effort_controllers/JointGroupEffortController # ForwardCommandController
 
+    fd_ee_broadcaster:
+      type: ee_pose_broadcaster/EePoseBroadcaster
+
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
@@ -25,3 +28,14 @@ fd/fd_controller:
     #  - fd_pitch
     #  - fd_yaw
     #  - fd_clutch
+
+fd/fd_ee_broadcaster:
+  ros__parameters:
+    transform_translation:
+      - 0.0
+      - 0.0
+      - 0.0
+    transform_rotation:
+      - 0.0
+      - 0.0
+      - 0.0
