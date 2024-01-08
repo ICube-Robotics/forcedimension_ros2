@@ -69,6 +69,7 @@ protected:
   std::shared_ptr<rclcpp::Publisher<geometry_msgs::msg::PoseStamped>> ee_pose_publisher_;
   std::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::msg::PoseStamped>>
   realtime_ee_pose_publisher_;
+  std::vector<std::string> joints_;
   std::unordered_map<std::string, std::unordered_map<std::string, double>> name_if_value_mapping_;
 
   Eigen::Matrix4d transform_, pose_;

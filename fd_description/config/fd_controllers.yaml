@@ -23,11 +23,12 @@ fd/fd_controller:
       - fd_x
       - fd_y
       - fd_z
-    ## Note: uncomment the following if using an omega 6/7 device
-    #  - fd_roll
-    #  - fd_pitch
-    #  - fd_yaw
-    #  - fd_clutch
+    ## Note: uncomment the following if using an omega 7 device (e.g., 7 controlled DoF)
+      # - fd_roll
+      # - fd_pitch
+      # - fd_yaw
+    ## Note: uncomment the following if a clutch is present (e.g., omega 6/7 device)
+      # - fd_clutch
 
 fd/fd_ee_broadcaster:
   ros__parameters:
@@ -39,3 +40,11 @@ fd/fd_ee_broadcaster:
       - 0.0
       - 0.0
       - 0.0
+    joints:
+      - fd_x
+      - fd_y
+      - fd_z
+    ## Note: uncomment the following if orientation is enabled (e.g., omega 6/7 device)
+      # - fd_roll
+      # - fd_pitch
+      # - fd_yaw

@@ -56,6 +56,7 @@ EePoseBroadcaster::on_init()
   try {
     // definition of the parameters that need to be queried from the
     // controller configuration file with default values
+    auto_declare<std::vector<std::string>>("joints", std::vector<std::string>());
     auto_declare<std::vector<double>>("transform_translation", std::vector<double>());
     auto_declare<std::vector<double>>("transform_rotation", std::vector<double>());
   } catch (const std::exception & e) {
@@ -76,13 +77,35 @@ EePoseBroadcaster::command_interface_configuration() const
 controller_interface::InterfaceConfiguration EePoseBroadcaster::state_interface_configuration()
 const
 {
-  return controller_interface::InterfaceConfiguration{
-    controller_interface::interface_configuration_type::ALL};
+  controller_interface::InterfaceConfiguration state_interfaces_config;
+  state_interfaces_config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+
+  if (joints_.empty()) {
+    RCLCPP_WARN(get_node()->get_logger(), "No joint name provided!");
+
+  } else {
+    for (const auto & joint : joints_) {
+      state_interfaces_config.names.push_back(joint + "/" + HW_IF_POSITION);
+      fprintf(
+        stderr,
+        "Requesting interface '%s'. \n",
+        (joint + "/" + HW_IF_POSITION).c_str()
+      );
+    }
+  }
+
+  return state_interfaces_config;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 EePoseBroadcaster::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  joints_ = get_node()->get_parameter("joints").as_string_array();
+  if (joints_.empty()) {
+    RCLCPP_ERROR(get_node()->get_logger(), "Please provide list of joints in config!");
+    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::ERROR;
+  }
+
   auto transform_trans_param = get_node()->get_parameter("transform_translation").as_double_array();
   auto transform_rot_param = get_node()->get_parameter("transform_rotation").as_double_array();
   Eigen::Quaternion<double> q;
@@ -139,12 +162,20 @@ EePoseBroadcaster::on_configure(const rclcpp_lifecycle::State & /*previous_state
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 EePoseBroadcaster::on_activate(const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  if (state_interfaces_.size() != (joints_.size())) {
+    RCLCPP_WARN(
+      get_node()->get_logger(),
+      "Not all requested interfaces exists.");
+  }
+
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 EePoseBroadcaster::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  joints_.clear();
+
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
 }
 
@@ -152,6 +183,12 @@ double get_value(
   const std::unordered_map<std::string, std::unordered_map<std::string, double>> & map,
   const std::string & name, const std::string & interface_name)
 {
+  // fprintf(stderr,
+  //   "get_value for jnt '%s' / '%s'",
+  //   name.c_str(),
+  //   interface_name.c_str()
+  // );
+
   const auto & interfaces_and_values = map.at(name);
   const auto interface_and_value = interfaces_and_values.find(interface_name);
   if (interface_and_value != interfaces_and_values.cend()) {
@@ -166,37 +203,56 @@ controller_interface::return_type EePoseBroadcaster::update(
   const rclcpp::Duration & /*period*/)
 {
   for (const auto & state_interface : state_interfaces_) {
-    name_if_value_mapping_[state_interface.get_name()][state_interface.get_interface_name()] =
+    //   fprintf(stderr, " map[%s][%s] = [%f] \n",
+    //   state_interface.get_prefix_name().c_str(),
+    //   state_interface.get_interface_name().c_str(),
+    //   state_interface.get_value()
+    // );
+
+    name_if_value_mapping_[state_interface.get_prefix_name()][state_interface.get_interface_name()]
+      =
       state_interface.get_value();
     RCLCPP_DEBUG(
-      get_node()->get_logger(), "%s/%s: %f\n", state_interface.get_name().c_str(),
+      get_node()->get_logger(), "%s/%s: %f\n", state_interface.get_prefix_name().c_str(),
       state_interface.get_interface_name().c_str(), state_interface.get_value());
   }
 
   if (realtime_ee_pose_publisher_ && realtime_ee_pose_publisher_->trylock()) {
     pose_ = Eigen::Matrix4d::Identity();
 
-    double p_x = get_value(name_if_value_mapping_, "fd_x", HW_IF_POSITION);
-    double p_y = get_value(name_if_value_mapping_, "fd_y", HW_IF_POSITION);
-    double p_z = get_value(name_if_value_mapping_, "fd_z", HW_IF_POSITION);
-    double roll = get_value(name_if_value_mapping_, "fd_roll", HW_IF_POSITION);
-    double pitch = get_value(name_if_value_mapping_, "fd_pitch", HW_IF_POSITION);
-    double yaw = get_value(name_if_value_mapping_, "fd_yaw", HW_IF_POSITION);
+    if (joints_.size() >= 3) {
+      double p_x = get_value(name_if_value_mapping_, joints_[0], HW_IF_POSITION);
+      double p_y = get_value(name_if_value_mapping_, joints_[1], HW_IF_POSITION);
+      double p_z = get_value(name_if_value_mapping_, joints_[2], HW_IF_POSITION);
 
-    std::cout << "x: " << p_x << std::endl;
 
-    if (std::isnan(p_x) || std::isnan(p_y) || std::isnan(p_z)) {
-      RCLCPP_DEBUG(
-        get_node()->get_logger(), "Failled to retrieve fd pose! (fd_x, fd_y, fd_z)!");
-      return controller_interface::return_type::ERROR;
+      if (std::isnan(p_x) || std::isnan(p_y) || std::isnan(p_z)) {
+        RCLCPP_DEBUG(
+          get_node()->get_logger(), "Failed to retrieve fd pose! (fd_x, fd_y, fd_z)!");
+        return controller_interface::return_type::ERROR;
+      }
+      pose_(0, 3) = p_x;
+      pose_(1, 3) = p_y;
+      pose_(2, 3) = p_z;
     }
-    pose_(0, 3) = p_x;
-    pose_(1, 3) = p_y;
-    pose_(2, 3) = p_z;
 
-    if (!std::isnan(roll) && !std::isnan(pitch) && !std::isnan(yaw)) {
-      // TODO(tpoignonec): retrieve actual orientation
-      pose_.block<3, 3>(0, 0) = Eigen::Matrix3d::Zero();
+    if (joints_.size() >= 6) {
+      double roll = get_value(name_if_value_mapping_, joints_[3], HW_IF_POSITION);
+      double pitch = get_value(name_if_value_mapping_, joints_[4], HW_IF_POSITION);
+      double yaw = get_value(name_if_value_mapping_, joints_[5], HW_IF_POSITION);
+
+      if (std::isnan(roll) || std::isnan(pitch) || std::isnan(yaw)) {
+        RCLCPP_DEBUG(
+          get_node()->get_logger(), "Failed to retrieve fd pose! (fd_x, fd_y, fd_z)!");
+        return controller_interface::return_type::ERROR;
+      }
+
+      Eigen::AngleAxisd rollAngle(roll, Eigen::Vector3d::UnitX());
+      Eigen::AngleAxisd pitchAngle(pitch, Eigen::Vector3d::UnitY());
+      Eigen::AngleAxisd yawAngle(yaw, Eigen::Vector3d::UnitZ());
+
+      Eigen::Quaterniond q = rollAngle * pitchAngle * yawAngle;
+      pose_.block<3, 3>(0, 0) = q.normalized().toRotationMatrix();
     }
 
     pose_ = transform_ * pose_;
