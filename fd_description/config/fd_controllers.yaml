@@ -30,9 +30,6 @@ fd/fd_controller:
     ## Note: uncomment the following if a clutch is present (e.g., omega 6/7 device)
       # - fd_clutch
 
-    gpios:
-      - button
-
 fd/fd_ee_broadcaster:
   ros__parameters:
     transform_translation:
