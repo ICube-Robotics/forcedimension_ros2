@@ -86,11 +86,6 @@ const
   } else {
     for (const auto & joint : joints_) {
       state_interfaces_config.names.push_back(joint + "/" + HW_IF_POSITION);
-      fprintf(
-        stderr,
-        "Requesting interface '%s'. \n",
-        (joint + "/" + HW_IF_POSITION).c_str()
-      );
     }
   }
 
@@ -183,12 +178,6 @@ double get_value(
   const std::unordered_map<std::string, std::unordered_map<std::string, double>> & map,
   const std::string & name, const std::string & interface_name)
 {
-  // fprintf(stderr,
-  //   "get_value for jnt '%s' / '%s'",
-  //   name.c_str(),
-  //   interface_name.c_str()
-  // );
-
   const auto & interfaces_and_values = map.at(name);
   const auto interface_and_value = interfaces_and_values.find(interface_name);
   if (interface_and_value != interfaces_and_values.cend()) {
@@ -203,14 +192,8 @@ controller_interface::return_type EePoseBroadcaster::update(
   const rclcpp::Duration & /*period*/)
 {
   for (const auto & state_interface : state_interfaces_) {
-    //   fprintf(stderr, " map[%s][%s] = [%f] \n",
-    //   state_interface.get_prefix_name().c_str(),
-    //   state_interface.get_interface_name().c_str(),
-    //   state_interface.get_value()
-    // );
-
-    name_if_value_mapping_[state_interface.get_prefix_name()][state_interface.get_interface_name()]
-      =
+    name_if_value_mapping_[
+      state_interface.get_prefix_name()][state_interface.get_interface_name()] =
       state_interface.get_value();
     RCLCPP_DEBUG(
       get_node()->get_logger(), "%s/%s: %f\n", state_interface.get_prefix_name().c_str(),
@@ -224,7 +207,6 @@ controller_interface::return_type EePoseBroadcaster::update(
       double p_x = get_value(name_if_value_mapping_, joints_[0], HW_IF_POSITION);
       double p_y = get_value(name_if_value_mapping_, joints_[1], HW_IF_POSITION);
       double p_z = get_value(name_if_value_mapping_, joints_[2], HW_IF_POSITION);
-
 
       if (std::isnan(p_x) || std::isnan(p_y) || std::isnan(p_z)) {
         RCLCPP_DEBUG(
