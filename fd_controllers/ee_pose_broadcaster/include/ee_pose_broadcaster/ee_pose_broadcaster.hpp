@@ -29,7 +29,7 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "realtime_tools/realtime_publisher.h"
 #include "geometry_msgs/msg/pose_stamped.hpp"
-#include "example_interfaces/msg/bool.hpp"
+#include "std_msgs/msg/bool.hpp"
 
 namespace ee_pose_broadcaster
 {
@@ -77,8 +77,8 @@ protected:
   std::shared_ptr<realtime_tools::RealtimePublisher<geometry_msgs::msg::PoseStamped>>
   realtime_ee_pose_publisher_;
 
-  std::shared_ptr<rclcpp::Publisher<example_interfaces::msg::Bool>> fd_button_publisher_;
-  std::shared_ptr<realtime_tools::RealtimePublisher<example_interfaces::msg::Bool>>
+  std::shared_ptr<rclcpp::Publisher<std_msgs::msg::Bool>> fd_button_publisher_;
+  std::shared_ptr<realtime_tools::RealtimePublisher<std_msgs::msg::Bool>>
   realtime_fd_button_publisher_;
 };
 

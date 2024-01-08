@@ -157,11 +157,11 @@ EePoseBroadcaster::on_configure(const rclcpp_lifecycle::State & /*previous_state
       std::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::msg::PoseStamped>>(
       ee_pose_publisher_);
 
-    fd_button_publisher_ = get_node()->create_publisher<example_interfaces::msg::Bool>(
+    fd_button_publisher_ = get_node()->create_publisher<std_msgs::msg::Bool>(
       "button_state", rclcpp::SystemDefaultsQoS());
 
     realtime_fd_button_publisher_ =
-      std::make_shared<realtime_tools::RealtimePublisher<example_interfaces::msg::Bool>>(
+      std::make_shared<realtime_tools::RealtimePublisher<std_msgs::msg::Bool>>(
       fd_button_publisher_);
   } catch (const std::exception & e) {
     // get_node() may throw, logging raw here

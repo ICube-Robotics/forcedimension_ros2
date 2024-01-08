@@ -17,6 +17,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(realtime_tools REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(example_interfaces REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3)
@@ -34,6 +35,7 @@ ament_target_dependencies(ee_pose_broadcaster
   rcutils
   realtime_tools
   geometry_msgs
+  std_msgs
   eigen3_cmake_module
   Eigen3
   example_interfaces
