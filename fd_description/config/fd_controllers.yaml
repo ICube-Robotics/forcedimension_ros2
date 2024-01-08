@@ -48,3 +48,4 @@ fd/fd_ee_broadcaster:
       # - fd_roll
       # - fd_pitch
       # - fd_yaw
+    buttons: [button]  # Note: only one button supported for now
