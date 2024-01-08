@@ -57,6 +57,7 @@ EePoseBroadcaster::on_init()
     // definition of the parameters that need to be queried from the
     // controller configuration file with default values
     auto_declare<std::vector<std::string>>("joints", std::vector<std::string>());
+    auto_declare<std::vector<std::string>>("buttons", std::vector<std::string>());
     auto_declare<std::vector<double>>("transform_translation", std::vector<double>());
     auto_declare<std::vector<double>>("transform_rotation", std::vector<double>());
   } catch (const std::exception & e) {
@@ -89,12 +90,22 @@ const
     }
   }
 
+  if (buttons_.empty()) {
+    RCLCPP_WARN(get_node()->get_logger(), "No button name provided!");
+
+  } else {
+    for (const auto & button : buttons_) {
+      state_interfaces_config.names.push_back(button + "/" + HW_IF_POSITION);
+    }
+  }
+
   return state_interfaces_config;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 EePoseBroadcaster::on_configure(const rclcpp_lifecycle::State & /*previous_state*/)
 {
+  buttons_ = get_node()->get_parameter("buttons").as_string_array();
   joints_ = get_node()->get_parameter("joints").as_string_array();
   if (joints_.empty()) {
     RCLCPP_ERROR(get_node()->get_logger(), "Please provide list of joints in config!");
@@ -137,7 +148,6 @@ EePoseBroadcaster::on_configure(const rclcpp_lifecycle::State & /*previous_state
 
   std::cout << transform_ << std::endl;
 
-
   try {
     ee_pose_publisher_ = get_node()->create_publisher<geometry_msgs::msg::PoseStamped>(
       "ee_pose",
@@ -146,6 +156,13 @@ EePoseBroadcaster::on_configure(const rclcpp_lifecycle::State & /*previous_state
     realtime_ee_pose_publisher_ =
       std::make_shared<realtime_tools::RealtimePublisher<geometry_msgs::msg::PoseStamped>>(
       ee_pose_publisher_);
+
+    fd_button_publisher_ = get_node()->create_publisher<example_interfaces::msg::Bool>(
+      "button_state", rclcpp::SystemDefaultsQoS());
+
+    realtime_fd_button_publisher_ =
+      std::make_shared<realtime_tools::RealtimePublisher<example_interfaces::msg::Bool>>(
+      fd_button_publisher_);
   } catch (const std::exception & e) {
     // get_node() may throw, logging raw here
     fprintf(stderr, "Exception thrown during init stage with message: %s \n", e.what());
@@ -254,6 +271,15 @@ controller_interface::return_type EePoseBroadcaster::update(
     ee_pose_msg.pose.orientation.z = q.z();
 
     realtime_ee_pose_publisher_->unlockAndPublish();
+  }
+
+  if (!buttons_.empty()) {
+    if (realtime_fd_button_publisher_ && realtime_fd_button_publisher_->trylock()) {
+      auto & ee_button_msg = realtime_fd_button_publisher_->msg_;
+      double button_status = get_value(name_if_value_mapping_, buttons_[0], HW_IF_POSITION);
+      ee_button_msg.data = button_status > 0.5;
+      realtime_fd_button_publisher_->unlockAndPublish();
+    }
   }
 
   return controller_interface::return_type::OK;

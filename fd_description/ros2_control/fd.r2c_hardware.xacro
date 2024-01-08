@@ -12,6 +12,11 @@
                 </xacro:unless>
             </hardware>
 
+            <!-- Configure GPIOs -->
+            <gpio name="button">
+                <state_interface name="position"/>
+            </gpio>
+
             <!-- Configure translations -->
             <xacro:macro name="configure_translation_joint" params="joint_name">
                 <joint name="${joint_name}">
