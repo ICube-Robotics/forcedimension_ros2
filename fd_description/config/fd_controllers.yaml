@@ -5,6 +5,9 @@ fd/controller_manager:
     fd_controller:
       type: effort_controllers/JointGroupEffortController # ForwardCommandController
 
+    fd_ee_broadcaster:
+      type: ee_pose_broadcaster/EePoseBroadcaster
+
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
@@ -20,8 +23,29 @@ fd/fd_controller:
       - fd_x
       - fd_y
       - fd_z
-    ## Note: uncomment the following if using an omega 6/7 device
-    #  - fd_roll
-    #  - fd_pitch
-    #  - fd_yaw
-    #  - fd_clutch
+    ## Note: uncomment the following if using an omega 7 device (e.g., 7 controlled DoF)
+      # - fd_roll
+      # - fd_pitch
+      # - fd_yaw
+    ## Note: uncomment the following if a clutch is present (e.g., omega 6/7 device)
+      # - fd_clutch
+
+fd/fd_ee_broadcaster:
+  ros__parameters:
+    transform_translation:
+      - 0.0
+      - 0.0
+      - 0.0
+    transform_rotation:
+      - 0.0
+      - 0.0
+      - 0.0
+    joints:
+      - fd_x
+      - fd_y
+      - fd_z
+    ## Note: uncomment the following if orientation is enabled (e.g., omega 6/7 device)
+      # - fd_roll
+      # - fd_pitch
+      # - fd_yaw
+    buttons: [button]  # Note: only one button supported for now

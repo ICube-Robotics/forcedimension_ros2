@@ -90,7 +90,7 @@ def generate_launch_description():
 
     # Load controllers
     load_controllers = []
-    for controller in ['fd_controller', 'joint_state_broadcaster']:
+    for controller in ['fd_controller', 'joint_state_broadcaster', 'fd_ee_broadcaster']:
         load_controllers += [
             Node(
                 package='controller_manager',

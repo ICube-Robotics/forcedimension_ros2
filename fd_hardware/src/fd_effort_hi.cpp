@@ -56,6 +56,7 @@ CallbackReturn FDEffortHardwareInterface::on_init(
   hw_states_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_states_effort_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_commands_effort_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_button_state_.resize(info_.gpios.size(), std::numeric_limits<double>::quiet_NaN());
 
 
   for (const hardware_interface::ComponentInfo & joint : info_.joints) {
@@ -106,6 +107,38 @@ CallbackReturn FDEffortHardwareInterface::on_init(
       return CallbackReturn::ERROR;
     }
   }
+  for (const hardware_interface::ComponentInfo & button : info_.gpios) {
+    if (button.state_interfaces.size() != 1) {
+      RCLCPP_FATAL(
+        rclcpp::get_logger("FDEffortHardwareInterface"),
+        "Button '%s' has %lu state interface. 1 expected.", button.name.c_str(),
+        button.state_interfaces.size());
+      return CallbackReturn::ERROR;
+    }
+    if (button.state_interfaces[0].name != hardware_interface::HW_IF_POSITION) {
+      RCLCPP_FATAL(
+        rclcpp::get_logger("FDEffortHardwareInterface"),
+        "Button '%s' have %s state interface. '%s' expected.", button.name.c_str(),
+        button.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
+      return CallbackReturn::ERROR;
+    }
+  }
+  for (const hardware_interface::ComponentInfo & button : info_.gpios) {
+    if (button.state_interfaces.size() != 1) {
+      RCLCPP_FATAL(
+        rclcpp::get_logger("FDEffortHardwareInterface"),
+        "Button '%s' has %lu state interface. 1 expected.", button.name.c_str(),
+        button.state_interfaces.size());
+      return CallbackReturn::ERROR;
+    }
+    if (button.state_interfaces[0].name != hardware_interface::HW_IF_POSITION) {
+      RCLCPP_FATAL(
+        rclcpp::get_logger("FDEffortHardwareInterface"),
+        "Button '%s' have %s state interface. '%s' expected.", button.name.c_str(),
+        button.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
+      return CallbackReturn::ERROR;
+    }
+  }
 
   return CallbackReturn::SUCCESS;
 }
@@ -128,6 +161,11 @@ FDEffortHardwareInterface::export_state_interfaces()
     state_interfaces.emplace_back(
       hardware_interface::StateInterface(
         info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &hw_states_effort_[i]));
+  }
+  for (uint i = 0; i < info_.gpios.size(); i++) {
+    state_interfaces.emplace_back(
+      hardware_interface::StateInterface(
+        info_.gpios[i].name, hardware_interface::HW_IF_POSITION, &hw_button_state_[i]));
   }
 
   return state_interfaces;
@@ -227,6 +265,16 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   }
   if (dhdHasGripper(interface_ID_) && hw_states_effort_.size() > 6) {
     hw_states_effort_[6] = gripper_force;
+  }
+
+  // Get button status, TODO multiple buttons from index
+  int button_status = dhdGetButton(0, interface_ID_);
+  if (button_status == 1) {
+    hw_button_state_[0] = 1.0;
+  } else if (button_status == 0) {
+    hw_button_state_[0] = 0.0;
+  } else {
+    flag += -1;
   }
 
   if (flag >= 0) {
