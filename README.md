@@ -6,6 +6,8 @@ This stack includes `ros2_control` drivers for Force Dimension SDK compatible ha
 
 [![Licence](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![CI (humble)](../../actions/workflows/ci.yml/badge.svg?branch=humble)](../../actions/workflows/ci.yml?query=branch:humble)
+[![CI (jazzy)](../../actions/workflows/ci-jazzy.yml/badge.svg?branch=main)](../../actions/workflows/ci-jazzy.yml?query=branch:main)
+[![CI (rolling)](../../actions/workflows/ci.yml/badge.svg?branch=main)](../../actions/workflows/ci.yml?query=branch:main)
 
 > **Warning**
 >
