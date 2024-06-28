@@ -5,14 +5,16 @@ This stack includes `ros2_control` drivers for Force Dimension SDK compatible ha
 ***Tested with a Humble ROS distribution only (Ubuntu 22.04 LTS)***
 
 [![Licence](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CI (humble)](../../actions/workflows/ci.yaml/badge.svg)](../../actions/workflows/ci.yaml)
-[![Build tests (iron)](../../actions/workflows/ci-iron.yaml/badge.svg?branch=main)](../../actions/workflows/ci-iron.yaml?query=branch:main)
-[![Build tests (rolling)](../../actions/workflows/ci-rolling.yaml/badge.svg?branch=main)](../../actions/workflows/ci-rolling.yaml?query=branch:main)
+[![CI (humble)](../../actions/workflows/ci.yml/badge.svg?branch=humble)](../../actions/workflows/ci.yml?query=branch:humble)
 
 > **Warning**
 >
 > The vendor package [fd_sdk_vendor](https://github.com/ICube-Robotics/fd_sdk_vendor.git) is now required!
 > Please follow the installation steps carefully.
+
+> **Note**
+>
+> Although still online, the `foxy` and `galactic` branches are not maintained anymore and might be obsolete.
 
 
 ## Compatible devices
