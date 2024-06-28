@@ -1,4 +1,4 @@
-name: CI (rolling)
+name: CI (jazzy)
 on:
   push:
     branches: [ main ]
@@ -23,5 +23,5 @@ jobs:
           pwd
       - uses: ros-tooling/action-ros-ci@v0.3
         with:
-          target-ros2-distro: rolling
+          target-ros2-distro: jazzy
           vcs-repo-file-url: ./forcedimension_ros2.repos
