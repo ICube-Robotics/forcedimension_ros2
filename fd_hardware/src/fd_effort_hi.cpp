@@ -36,6 +36,12 @@ using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 namespace fd_hardware
 {
 
+unsigned int flattened_index_from_triangular_index(unsigned int i, unsigned int j)
+{
+  return i * (i - 1) / 2 + j;
+}
+
+
 FDEffortHardwareInterface::~FDEffortHardwareInterface()
 {
   // If controller manager is shutdown via Ctrl + C, the on_deactivate methods won't be called.
@@ -56,6 +62,7 @@ CallbackReturn FDEffortHardwareInterface::on_init(
   hw_states_velocity_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_states_effort_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_commands_effort_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_states_inertia_.resize(15, std::numeric_limits<double>::quiet_NaN());
   hw_button_state_.resize(info_.gpios.size(), std::numeric_limits<double>::quiet_NaN());
 
 
@@ -168,6 +175,20 @@ FDEffortHardwareInterface::export_state_interfaces()
         info_.gpios[i].name, hardware_interface::HW_IF_POSITION, &hw_button_state_[i]));
   }
 
+  // TODO(tpoignonec) Make a parameter or somehow retrieve robot prefix
+  std::string inertia_interface_name = "fd_inertia";
+
+  // Map upper triangular part of inertia to inertia state interface
+  for (uint row = 0; row < 6; row++) {
+    for (uint col = row; col < 6; col++) {
+      state_interfaces.emplace_back(
+        hardware_interface::StateInterface(
+          inertia_interface_name,
+          std::to_string(row) + "" + std::to_string(col),
+          &hw_states_inertia_[flattened_index_from_triangular_index(row, col)]));
+    }
+  }
+
   return state_interfaces;
 }
 // ------------------------------------------------------------------------------------------
@@ -265,6 +286,23 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   }
   if (dhdHasGripper(interface_ID_) && hw_states_effort_.size() > 6) {
     hw_states_effort_[6] = gripper_force;
+  }
+  // Get inertia
+  double inertia_array[6][6];
+  double joint_position[DHD_MAX_DOF];
+  // use "dhdGetJointAngles (double j[DHD_MAX_DOF], char ID=-1)" to get the joint positions
+  flag += dhdEnableExpertMode();
+  flag += dhdGetJointAngles(joint_position, interface_ID_);
+  // use "dhdJointAnglesToInertiaMatrix (double j[DHD_MAX_DOF], double inertia[6][6], char ID=-1)"
+  // to get the current inertia matrix
+  flag += dhdJointAnglesToInertiaMatrix(joint_position, inertia_array);
+  flag += dhdDisableExpertMode();
+
+  // Map upper triangular part of inertia to inertia state interface
+  for (uint row = 0; row < 6; row++) {
+    for (uint col = row; col < 6; col++) {
+      hw_states_inertia_[flattened_index_from_triangular_index(row, col)] = inertia_array[row][col];
+    }
   }
 
   // Get button status, TODO multiple buttons from index
