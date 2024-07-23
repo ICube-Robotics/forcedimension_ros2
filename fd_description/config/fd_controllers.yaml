@@ -8,6 +8,9 @@ fd/controller_manager:
     fd_ee_broadcaster:
       type: ee_pose_broadcaster/EePoseBroadcaster
 
+    fd_inertia_broadcaster:
+      type: fd_inertia_broadcaster/FdInertiaBroadcaster
+
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
@@ -49,3 +52,11 @@ fd/fd_ee_broadcaster:
       # - fd_pitch
       # - fd_yaw
     buttons: [button]  # Note: only one button supported for now
+
+fd/fd_inertia_broadcaster:
+  ros__parameters:
+    transform_rotation:
+      - 0.0
+      - 0.0
+      - 0.0
+    inertia_interface_name: fd_inertia
