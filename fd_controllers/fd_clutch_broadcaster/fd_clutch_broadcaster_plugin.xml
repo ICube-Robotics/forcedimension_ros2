@@ -1,0 +1,10 @@
+<library path="fd_clutch_broadcaster">
+  <class
+    name="fd_clutch_broadcaster/FdClutchBroadcaster"
+    type="fd_clutch_broadcaster::FdClutchBroadcaster"
+    base_class_type="controller_interface::ControllerInterface">
+    <description>
+      The fd inertia broadcaster publishes the current cartesian inertia from ros2_control fd system.
+    </description>
+  </class>
+</library>
