@@ -141,7 +141,8 @@ controller_interface::return_type FdClutchBroadcaster::update(
       clutch_state = (read_value > 0.5) ? true : false;
     } else {
       // Clutched (workspace engaged) if handle angle is small (i.e., physically clutched)
-      clutch_state = (read_value < 0.1) ? true : false;
+      // E.g., 7th "joint" of Omega 6 / Sigma 7
+      clutch_state = (read_value > 0.03) ? true : false;
     }
 
     // Publish clucth
