@@ -95,6 +95,7 @@ def generate_launch_description():
         'joint_state_broadcaster',
         'fd_ee_broadcaster',
         'fd_inertia_broadcaster',
+        'fd_clutch_broadcaster',
     ]:
         load_controllers += [
             Node(
