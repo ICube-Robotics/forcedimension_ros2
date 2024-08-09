@@ -2,6 +2,9 @@ fd/controller_manager:
   ros__parameters:
     update_rate: 1000  # Hz
 
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
     fd_controller:
       type: effort_controllers/JointGroupEffortController # ForwardCommandController
 
@@ -11,8 +14,9 @@ fd/controller_manager:
     fd_inertia_broadcaster:
       type: fd_inertia_broadcaster/FdInertiaBroadcaster
 
-    joint_state_broadcaster:
-      type: joint_state_broadcaster/JointStateBroadcaster
+    fd_clutch_broadcaster:
+      type: fd_clutch_broadcaster/FdClutchBroadcaster
+
 
 fd/fd_controller:
   ros__parameters:
@@ -60,3 +64,8 @@ fd/fd_inertia_broadcaster:
       - 0.0
       - 0.0
     inertia_interface_name: fd_inertia
+
+fd/fd_clutch_broadcaster:
+  ros__parameters:
+    clutch_interface_name: "button/position"
+    is_interface_a_button: true
