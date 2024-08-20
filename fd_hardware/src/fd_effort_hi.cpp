@@ -446,6 +446,17 @@ bool FDEffortHardwareInterface::connectToDevice()
     }
     RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "dhd : Device connected !");
 
+    if (emulate_button_ && dhdHasGripper(interface_ID_)) {
+      RCLCPP_INFO(
+        rclcpp::get_logger(
+          "FDEffortHardwareInterface"), "dhd : Emulating button from clutch joint !");
+      if (dhdEmulateButton(DHD_ON, interface_ID_) < DHD_NO_ERROR) {
+      RCLCPP_WARN(
+        rclcpp::get_logger(
+          "FDEffortHardwareInterface"), "dhd : Could not enable button emulation!");
+      disconnectFromDevice();
+      }
+    }
     // Set force to zero
     if (dhdSetForceAndTorqueAndGripperForce(
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
