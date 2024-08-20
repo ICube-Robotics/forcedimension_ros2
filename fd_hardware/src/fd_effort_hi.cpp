@@ -38,6 +38,8 @@ using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface
 namespace fd_hardware
 {
 
+rclcpp::Logger LOGGER = rclcpp::get_logger("FDEffortHardwareInterface");
+
 unsigned int flattened_index_from_triangular_index(unsigned int i, unsigned int j)
 {
   return i * (i - 1) / 2 + j;
@@ -72,7 +74,7 @@ CallbackReturn FDEffortHardwareInterface::on_init(
     // PHI has currently exactly 3 states and 1 command interface on each joint
     if (joint.command_interfaces.size() != 1) {
       RCLCPP_FATAL(
-        rclcpp::get_logger("FDEffortHardwareInterface"),
+        LOGGER,
         "Joint '%s' has %lu command interfaces found. 1 expected.", joint.name.c_str(),
         joint.command_interfaces.size());
       return CallbackReturn::ERROR;
@@ -80,7 +82,7 @@ CallbackReturn FDEffortHardwareInterface::on_init(
 
     if (joint.command_interfaces[0].name != hardware_interface::HW_IF_EFFORT) {
       RCLCPP_FATAL(
-        rclcpp::get_logger("FDEffortHardwareInterface"),
+        LOGGER,
         "Joint '%s' have %s command interfaces found. '%s' expected.", joint.name.c_str(),
         joint.command_interfaces[0].name.c_str(), hardware_interface::HW_IF_EFFORT);
       return CallbackReturn::ERROR;
@@ -88,7 +90,7 @@ CallbackReturn FDEffortHardwareInterface::on_init(
 
     if (joint.state_interfaces.size() != 3) {
       RCLCPP_FATAL(
-        rclcpp::get_logger("FDEffortHardwareInterface"),
+        LOGGER,
         "Joint '%s' has %ld state interface. 3 expected.", joint.name.c_str(),
         joint.state_interfaces.size());
       return CallbackReturn::ERROR;
@@ -96,21 +98,21 @@ CallbackReturn FDEffortHardwareInterface::on_init(
 
     if (joint.state_interfaces[0].name != hardware_interface::HW_IF_POSITION) {
       RCLCPP_FATAL(
-        rclcpp::get_logger("FDEffortHardwareInterface"),
+        LOGGER,
         "Joint '%s' have %s state interface. '%s' expected.", joint.name.c_str(),
         joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
       return CallbackReturn::ERROR;
     }
     if (joint.state_interfaces[1].name != hardware_interface::HW_IF_VELOCITY) {
       RCLCPP_FATAL(
-        rclcpp::get_logger("FDEffortHardwareInterface"),
+        LOGGER,
         "Joint '%s' have %s state interface. '%s' expected.", joint.name.c_str(),
         joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_VELOCITY);
       return CallbackReturn::ERROR;
     }
     if (joint.state_interfaces[2].name != hardware_interface::HW_IF_EFFORT) {
       RCLCPP_FATAL(
-        rclcpp::get_logger("FDEffortHardwareInterface"),
+        LOGGER,
         "Joint '%s' have %s state interface. '%s' expected.", joint.name.c_str(),
         joint.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_EFFORT);
       return CallbackReturn::ERROR;
@@ -119,14 +121,14 @@ CallbackReturn FDEffortHardwareInterface::on_init(
   for (const hardware_interface::ComponentInfo & button : info_.gpios) {
     if (button.state_interfaces.size() != 1) {
       RCLCPP_FATAL(
-        rclcpp::get_logger("FDEffortHardwareInterface"),
+        LOGGER,
         "Button '%s' has %lu state interface. 1 expected.", button.name.c_str(),
         button.state_interfaces.size());
       return CallbackReturn::ERROR;
     }
     if (button.state_interfaces[0].name != hardware_interface::HW_IF_POSITION) {
       RCLCPP_FATAL(
-        rclcpp::get_logger("FDEffortHardwareInterface"),
+        LOGGER,
         "Button '%s' have %s state interface. '%s' expected.", button.name.c_str(),
         button.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
       return CallbackReturn::ERROR;
@@ -135,14 +137,14 @@ CallbackReturn FDEffortHardwareInterface::on_init(
   for (const hardware_interface::ComponentInfo & button : info_.gpios) {
     if (button.state_interfaces.size() != 1) {
       RCLCPP_FATAL(
-        rclcpp::get_logger("FDEffortHardwareInterface"),
+        LOGGER,
         "Button '%s' has %lu state interface. 1 expected.", button.name.c_str(),
         button.state_interfaces.size());
       return CallbackReturn::ERROR;
     }
     if (button.state_interfaces[0].name != hardware_interface::HW_IF_POSITION) {
       RCLCPP_FATAL(
-        rclcpp::get_logger("FDEffortHardwareInterface"),
+        LOGGER,
         "Button '%s' have %s state interface. '%s' expected.", button.name.c_str(),
         button.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
       return CallbackReturn::ERROR;
@@ -154,8 +156,7 @@ CallbackReturn FDEffortHardwareInterface::on_init(
   auto it_interface_id = info_.hardware_parameters.find("interface_id");
   if (it_interface_id != info_.hardware_parameters.end()) {
     interface_ID_ = stoi(it_interface_id->second);
-    RCLCPP_INFO(
-      rclcpp::get_logger("FDEffortHardwareInterface"), "Using interface ID: %d", interface_ID_);
+    RCLCPP_INFO(LOGGER, "Using interface ID: %d", interface_ID_);
   } else {
     interface_ID_ = -1;
   }
@@ -234,15 +235,13 @@ CallbackReturn FDEffortHardwareInterface::on_activate(
 {
   (void)previous_state;  // hush "-Wunused-parameter" warning
 
-  RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "Starting ...please wait...");
+  RCLCPP_INFO(LOGGER, "Starting ...please wait...");
 
   if (connectToDevice()) {
-    RCLCPP_INFO(
-      rclcpp::get_logger("FDEffortHardwareInterface"), "System Successfully started!");
+    RCLCPP_INFO(LOGGER, "System Successfully started!");
     return CallbackReturn::SUCCESS;
   } else {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("FDEffortHardwareInterface"), "System Not started!");
+    RCLCPP_ERROR(LOGGER, "System Not started!");
     return CallbackReturn::ERROR;
   }
 }
@@ -251,15 +250,13 @@ CallbackReturn FDEffortHardwareInterface::on_deactivate(
   const rclcpp_lifecycle::State & previous_state)
 {
   (void)previous_state;  // hush "-Wunused-parameter" warning
-  RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "Stopping ...please wait...");
+  RCLCPP_INFO(LOGGER, "Stopping ...please wait...");
 
   if (disconnectFromDevice()) {
-    RCLCPP_INFO(
-      rclcpp::get_logger("FDEffortHardwareInterface"), "System successfully stopped!");
+    RCLCPP_INFO(LOGGER, "System successfully stopped!");
     return CallbackReturn::SUCCESS;
   } else {
-    RCLCPP_ERROR(
-      rclcpp::get_logger("FDEffortHardwareInterface"), "System Not stopped!");
+    RCLCPP_ERROR(LOGGER, "System Not stopped!");
     return CallbackReturn::ERROR;
   }
 }
@@ -342,7 +339,7 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   if (flag >= 0) {
     return hardware_interface::return_type::OK;
   } else {
-    RCLCPP_ERROR(rclcpp::get_logger("FDEffortHardwareInterface"), "Updating from system failed!");
+    RCLCPP_ERROR(LOGGER, "Updating from system failed!");
     return hardware_interface::return_type::ERROR;
   }
 }
@@ -396,9 +393,9 @@ bool FDEffortHardwareInterface::connectToDevice()
 
     // Check if the device has 3 dof or more
     if (dhdHasWrist(interface_ID_)) {
-      RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "dhd : Rotation enabled ");
+      RCLCPP_INFO(LOGGER, "dhd : Rotation enabled ");
     } else {
-      RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "dhd : Rotation disabled ");
+      RCLCPP_INFO(LOGGER, "dhd : Rotation disabled ");
     }
 
     // Retrieve the mass of the device
@@ -435,7 +432,7 @@ bool FDEffortHardwareInterface::connectToDevice()
         rclcpp::get_logger(
           "FDEffortHardwareInterface"), "dhd : Gravity compensation enabled");
     }
-    RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "dhd : Device connected !");
+    RCLCPP_INFO(LOGGER, "dhd : Device connected !");
 
     if (emulate_button_ && dhdHasGripper(interface_ID_)) {
       RCLCPP_INFO(
@@ -472,7 +469,7 @@ bool FDEffortHardwareInterface::connectToDevice()
 // ------------------------------------------------------------------------------------------
 bool FDEffortHardwareInterface::disconnectFromDevice()
 {
-  RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "dhd : stopping the device.");
+  RCLCPP_INFO(LOGGER, "dhd : stopping the device.");
   // Stop the device: disables the force on the haptic device and puts it into BRAKE mode.
   int hasStopped = -1;
   while (hasStopped < 0) {
@@ -484,11 +481,11 @@ bool FDEffortHardwareInterface::disconnectFromDevice()
   // close device connection
   int connectionIsClosed = dhdClose(interface_ID_);
   if (connectionIsClosed >= 0) {
-    RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "dhd :  Disconnected ! ");
+    RCLCPP_INFO(LOGGER, "dhd :  Disconnected ! ");
     interface_ID_ = false;
     return true;
   } else {
-    RCLCPP_ERROR(rclcpp::get_logger("FDEffortHardwareInterface"), "dhd : Failed to disconnect !");
+    RCLCPP_ERROR(LOGGER, "dhd : Failed to disconnect !");
     return false;
   }
 }
