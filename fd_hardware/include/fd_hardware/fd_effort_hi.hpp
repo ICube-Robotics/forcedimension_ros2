@@ -68,6 +68,8 @@ private:
   /// If true, the button will be emulated from clutch joint (for omega 6 / sigma 7, see SDK doc)
   bool emulate_button_ = false;
 
+  std::string inertia_interface_name_;
+
   // Store the command for the robot
   std::vector<double> hw_commands_effort_;
   std::vector<double> hw_states_position_;

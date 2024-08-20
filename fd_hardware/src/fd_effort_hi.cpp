@@ -173,6 +173,16 @@ CallbackReturn FDEffortHardwareInterface::on_init(
     emulate_button_ = false;
   }
 
+  auto it_fd_inertia = info_.hardware_parameters.find("inertia_interface_name");
+  if (it_fd_inertia != info_.hardware_parameters.end())
+  {
+    inertia_interface_name_ = it_fd_inertia->second;
+  }
+  else
+  {
+    inertia_interface_name_ = "fd_inertia";
+  }
+
   return CallbackReturn::SUCCESS;
 }
 // ------------------------------------------------------------------------------------------
@@ -201,15 +211,12 @@ FDEffortHardwareInterface::export_state_interfaces()
         info_.gpios[i].name, hardware_interface::HW_IF_POSITION, &hw_button_state_[i]));
   }
 
-  // TODO(tpoignonec) Make a parameter or somehow retrieve robot prefix
-  std::string inertia_interface_name = "fd_inertia";
-
   // Map upper triangular part of inertia to inertia state interface
   for (uint row = 0; row < 6; row++) {
     for (uint col = row; col < 6; col++) {
       state_interfaces.emplace_back(
         hardware_interface::StateInterface(
-          inertia_interface_name,
+          inertia_interface_name_,
           std::to_string(row) + "" + std::to_string(col),
           &hw_states_inertia_[flattened_index_from_triangular_index(row, col)]));
     }
