@@ -59,10 +59,16 @@ public:
   hardware_interface::return_type write(const rclcpp::Time &, const rclcpp::Duration &) override;
 
 private:
-  // ID of the interface (Rq: "-1" = invalid/any that is connected)
+  /// ID of the interface (Rq: "-1" = invalid/any that is connected)
   char interface_ID_ = -1;
-  // Turned to true after the connection
+
+  /// Turned to true after the connection
   bool isConnected_ = false;
+
+  /// If true, the button will be emulated from clutch joint (for omega 6 / sigma 7, see SDK doc)
+  bool emulate_button_ = false;
+
+  std::string inertia_interface_name_;
 
   // Store the command for the robot
   std::vector<double> hw_commands_effort_;

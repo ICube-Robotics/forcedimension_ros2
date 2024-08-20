@@ -130,7 +130,9 @@ controller_interface::return_type FdClutchBroadcaster::update(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
+  RCLCPP_DEBUG(get_node()->get_logger(), "Entering update()");
   if (realtime_clutch_publisher_ && realtime_clutch_publisher_->trylock()) {
+    RCLCPP_DEBUG(get_node()->get_logger(), "Lock acquired");
     // Read provided state interface
     bool is_interface_a_button = get_node()->get_parameter("is_interface_a_button").as_bool();
     double read_value = state_interfaces_[0].get_value();
@@ -148,6 +150,7 @@ controller_interface::return_type FdClutchBroadcaster::update(
     // Publish clucth
     auto & fd_clutch_msg = realtime_clutch_publisher_->msg_;
     fd_clutch_msg.data = clutch_state;
+    RCLCPP_DEBUG(get_node()->get_logger(), "publish and unlock");
     realtime_clutch_publisher_->unlockAndPublish();
   }
 

@@ -141,6 +141,7 @@ FdInertiaBroadcaster::on_configure(const rclcpp_lifecycle::State & /*previous_st
   Eigen::Vector3d trans = Eigen::Vector3d::Zero();
 
   if (transform_trans_param.size() == 0) {
+    RCLCPP_INFO(get_node()->get_logger(), "No (linear) transformation provided. Using t = 0,0,0");
     trans << 0.0, 0.0, 0.0;
   } else if (transform_trans_param.size() == 3) {
     trans << transform_trans_param[0], transform_trans_param[1], transform_trans_param[2];
@@ -151,6 +152,8 @@ FdInertiaBroadcaster::on_configure(const rclcpp_lifecycle::State & /*previous_st
 
   if (transform_rot_param.size() == 0) {
     q = Eigen::Quaternion<double>(1, 0, 0, 0);
+    RCLCPP_INFO(get_node()->get_logger(),
+        "No (angular) transformation provided. Using q = 1,0,0,0");
   } else if (transform_rot_param.size() == 3) {
     Eigen::AngleAxisd rollAngle(transform_rot_param[0], Eigen::Vector3d::UnitZ());
     Eigen::AngleAxisd yawAngle(transform_rot_param[1], Eigen::Vector3d::UnitY());
@@ -212,7 +215,9 @@ controller_interface::return_type FdInertiaBroadcaster::update(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
+  RCLCPP_DEBUG(get_node()->get_logger(), "Entering update()");
   if (realtime_inertia_publisher_ && realtime_inertia_publisher_->trylock()) {
+    RCLCPP_DEBUG(get_node()->get_logger(), "Lock acquired");
     inertia_in_base_ = Eigen::Matrix<double, 6, 6>::Zero();
 
     // Map upper triangular part of inertia to inertia state interface
@@ -234,6 +239,7 @@ controller_interface::return_type FdInertiaBroadcaster::update(
     // Publish inertia
     auto & fd_inertia_msg = realtime_inertia_publisher_->msg_;
     matrixEigenToMsg(inertia_, fd_inertia_msg);
+    RCLCPP_DEBUG(get_node()->get_logger(), "publish and unlock");
     realtime_inertia_publisher_->unlockAndPublish();
   }
 
