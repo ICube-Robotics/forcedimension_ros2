@@ -175,6 +175,15 @@ CallbackReturn FDEffortHardwareInterface::on_init(
     inertia_interface_name_ = "fd_inertia";
   }
 
+  // Contingency for emulated button
+  // (commanded clutch force might be always left to NaN...)
+  if (emulate_button_ &&
+    (info_.joints.size() == 4 || info_.joints.size() > 6))
+  {
+    // Prevent NaN in clutch cmd
+    hw_commands_effort_[info_.joints.size() - 1] = 0.0;
+  }
+
   return CallbackReturn::SUCCESS;
 }
 // ------------------------------------------------------------------------------------------
@@ -348,7 +357,6 @@ hardware_interface::return_type FDEffortHardwareInterface::write(
   const rclcpp::Time & /*time*/,
   const rclcpp::Duration & /*period*/)
 {
-  // TODO(mcbed): write to FD system
   bool isNan = false;
   for (auto & command : hw_commands_effort_) {
     if (command != command) {
