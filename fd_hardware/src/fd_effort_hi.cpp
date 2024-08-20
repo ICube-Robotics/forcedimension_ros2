@@ -152,34 +152,25 @@ CallbackReturn FDEffortHardwareInterface::on_init(
 
   // Get parameters
   auto it_interface_id = info_.hardware_parameters.find("interface_id");
-  if (it_interface_id != info_.hardware_parameters.end())
-  {
+  if (it_interface_id != info_.hardware_parameters.end()) {
     interface_ID_ = stoi(it_interface_id->second);
     RCLCPP_INFO(
       rclcpp::get_logger("FDEffortHardwareInterface"), "Using interface ID: %d", interface_ID_);
-  }
-  else
-  {
+  } else {
     interface_ID_ = -1;
   }
 
   auto it_emulate_button = info_.hardware_parameters.find("emulate_button");
-  if (it_emulate_button != info_.hardware_parameters.end())
-  {
+  if (it_emulate_button != info_.hardware_parameters.end()) {
     emulate_button_ = hardware_interface::parse_bool(it_emulate_button->second);
-  }
-  else
-  {
+  } else {
     emulate_button_ = false;
   }
 
   auto it_fd_inertia = info_.hardware_parameters.find("inertia_interface_name");
-  if (it_fd_inertia != info_.hardware_parameters.end())
-  {
+  if (it_fd_inertia != info_.hardware_parameters.end()) {
     inertia_interface_name_ = it_fd_inertia->second;
-  }
-  else
-  {
+  } else {
     inertia_interface_name_ = "fd_inertia";
   }
 
@@ -451,10 +442,10 @@ bool FDEffortHardwareInterface::connectToDevice()
         rclcpp::get_logger(
           "FDEffortHardwareInterface"), "dhd : Emulating button from clutch joint !");
       if (dhdEmulateButton(DHD_ON, interface_ID_) < DHD_NO_ERROR) {
-      RCLCPP_WARN(
+        RCLCPP_WARN(
         rclcpp::get_logger(
           "FDEffortHardwareInterface"), "dhd : Could not enable button emulation!");
-      disconnectFromDevice();
+        disconnectFromDevice();
       }
     }
     // Set force to zero

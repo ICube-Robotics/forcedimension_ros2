@@ -152,7 +152,8 @@ FdInertiaBroadcaster::on_configure(const rclcpp_lifecycle::State & /*previous_st
 
   if (transform_rot_param.size() == 0) {
     q = Eigen::Quaternion<double>(1, 0, 0, 0);
-    RCLCPP_INFO(get_node()->get_logger(), "No (angular) transformation provided. Using q = 1,0,0,0");
+    RCLCPP_INFO(get_node()->get_logger(),
+        "No (angular) transformation provided. Using q = 1,0,0,0");
   } else if (transform_rot_param.size() == 3) {
     Eigen::AngleAxisd rollAngle(transform_rot_param[0], Eigen::Vector3d::UnitZ());
     Eigen::AngleAxisd yawAngle(transform_rot_param[1], Eigen::Vector3d::UnitY());
