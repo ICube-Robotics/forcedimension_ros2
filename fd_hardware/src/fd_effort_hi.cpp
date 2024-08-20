@@ -28,6 +28,8 @@
 #include "fd_sdk_vendor/dhd.hpp"
 #include "fd_sdk_vendor/drd.hpp"
 
+#include "hardware_interface/component_parser.hpp"
+#include "hardware_interface/lexical_casts.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
@@ -145,6 +147,30 @@ CallbackReturn FDEffortHardwareInterface::on_init(
         button.state_interfaces[0].name.c_str(), hardware_interface::HW_IF_POSITION);
       return CallbackReturn::ERROR;
     }
+  }
+
+
+  // Get parameters
+  auto it_interface_id = info_.hardware_parameters.find("interface_id");
+  if (it_interface_id != info_.hardware_parameters.end())
+  {
+    interface_ID_ = stoi(it_interface_id->second);
+    RCLCPP_INFO(
+      rclcpp::get_logger("FDEffortHardwareInterface"), "Using interface ID: %d", interface_ID_);
+  }
+  else
+  {
+    interface_ID_ = -1;
+  }
+
+  auto it_emulate_button = info_.hardware_parameters.find("emulate_button");
+  if (it_emulate_button != info_.hardware_parameters.end())
+  {
+    emulate_button_ = hardware_interface::parse_bool(it_emulate_button->second);
+  }
+  else
+  {
+    emulate_button_ = false;
   }
 
   return CallbackReturn::SUCCESS;
@@ -413,7 +439,7 @@ bool FDEffortHardwareInterface::connectToDevice()
     }
     RCLCPP_INFO(rclcpp::get_logger("FDEffortHardwareInterface"), "dhd : Device connected !");
 
-
+    // Set force to zero
     if (dhdSetForceAndTorqueAndGripperForce(
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         interface_ID_) < DHD_NO_ERROR)
