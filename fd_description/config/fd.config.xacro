@@ -17,10 +17,12 @@
     <!-- Import and setup interface ros2_control description -->
     <xacro:include filename="$(find fd_description)/ros2_control/fd.r2c_hardware.xacro" />
     <xacro:fd_ros2_control
+        interface_id="-1"
         robot_id= "$(arg robot_id)"
         use_fake_hardware="$(arg use_fake_hardware)"
         use_orientation="$(arg use_orientation)"
     	orientation_is_actuated="$(arg use_orientation)"
         use_clutch="$(arg use_clutch)"
+        emulate_button="true"
     /> <!-- orientation_is_actuated = use_orientation for now (see HW impl.) -->
 </robot>
