@@ -167,6 +167,7 @@ CallbackReturn FDEffortHardwareInterface::on_init(
   } else {
     emulate_button_ = false;
   }
+  RCLCPP_INFO(LOGGER, "Emulating button: %s", emulate_button_ ? "true" : "false");
 
   auto it_fd_inertia = info_.hardware_parameters.find("inertia_interface_name");
   if (it_fd_inertia != info_.hardware_parameters.end()) {
@@ -395,9 +396,7 @@ bool FDEffortHardwareInterface::connectToDevice()
 
   // Open connection
   if (dhdOpen() >= 0) {
-    RCLCPP_INFO(
-      rclcpp::get_logger(
-        "FDEffortHardwareInterface"), "dhd : %s device detected", dhdGetSystemName());
+    RCLCPP_INFO(LOGGER, "dhd : %s device detected", dhdGetSystemName());
 
     // Check if the device has 3 dof or more
     if (dhdHasWrist(interface_ID_)) {
@@ -409,56 +408,55 @@ bool FDEffortHardwareInterface::connectToDevice()
     // Retrieve the mass of the device
     double effector_mass = 0.0;
     if (dhdGetEffectorMass(&effector_mass, interface_ID_) == DHD_NO_ERROR) {
-      RCLCPP_INFO(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Effector Mass = %f (g)", effector_mass * 1000.0);
+      RCLCPP_INFO(LOGGER, "dhd : Effector Mass = %f (g)", effector_mass * 1000.0);
     } else {
-      RCLCPP_WARN(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Impossible to retrieve effector mass !");
+      RCLCPP_WARN(LOGGER, "dhd : Impossible to retrieve effector mass !");
     }
 
     // Set force limit & enable force
     double forceMax = 12;   // N
     if (dhdSetMaxForce(forceMax, interface_ID_) < DHD_NO_ERROR) {
+      RCLCPP_ERROR(LOGGER, "dhd : Could not set max force!");
       disconnectFromDevice();
     }
     // apply zero force
     dhdSetBrakes(DHD_OFF, interface_ID_);
 
     if (dhdEnableForce(DHD_ON, interface_ID_) < DHD_NO_ERROR) {
+      RCLCPP_ERROR(LOGGER, "dhd : Could not enable force control!");
       disconnectFromDevice();
+      return false;
     }
     // Gravity compensation
     if (dhdSetGravityCompensation(DHD_ON, interface_ID_) < DHD_NO_ERROR) {
-      RCLCPP_WARN(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Could not enable the gravity compensation !");
+      RCLCPP_WARN(LOGGER, "dhd : Could not enable the gravity compensation !");
       disconnectFromDevice();
+      return false;
     } else {
-      RCLCPP_INFO(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Gravity compensation enabled");
+      RCLCPP_INFO(LOGGER, "dhd : Gravity compensation enabled");
     }
     RCLCPP_INFO(LOGGER, "dhd : Device connected !");
 
-    if (emulate_button_ && dhdHasGripper(interface_ID_)) {
-      RCLCPP_INFO(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Emulating button from clutch joint !");
+    // Emulate button
+    if (emulate_button_ && !dhdHasGripper(interface_ID_)) {
+      RCLCPP_ERROR(LOGGER, "dhd : Could not enable button emulation, no gripper found!");
+    } else if (emulate_button_ && dhdHasGripper(interface_ID_)) {
+      RCLCPP_INFO(LOGGER, "dhd : Emulating button from clutch joint...");
       if (dhdEmulateButton(DHD_ON, interface_ID_) < DHD_NO_ERROR) {
-        RCLCPP_WARN(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Could not enable button emulation!");
+        RCLCPP_ERROR(LOGGER, "dhd : Could not enable button emulation!");
         disconnectFromDevice();
+        return false;
       }
+      RCLCPP_INFO(LOGGER, "dhd : OK, button will be emulated from clutch joint.");
     }
     // Set force to zero
     if (dhdSetForceAndTorqueAndGripperForce(
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         interface_ID_) < DHD_NO_ERROR)
     {
+      RCLCPP_ERROR(LOGGER, "dhd : Could not initialize force control!");
       disconnectFromDevice();
+      return false;
     }
 
     // Sleep 100 ms
@@ -467,9 +465,7 @@ bool FDEffortHardwareInterface::connectToDevice()
 
     return isConnected_;
   } else {
-    RCLCPP_ERROR(
-      rclcpp::get_logger(
-        "FDEffortHardwareInterface"), "dhd : Could not connect to device !");
+    RCLCPP_ERROR(LOGGER, "dhd : Could not connect to device !");
     isConnected_ = false;
     return isConnected_;
   }
@@ -477,10 +473,10 @@ bool FDEffortHardwareInterface::connectToDevice()
 // ------------------------------------------------------------------------------------------
 bool FDEffortHardwareInterface::disconnectFromDevice()
 {
-  RCLCPP_INFO(LOGGER, "dhd : stopping the device.");
   // Stop the device: disables the force on the haptic device and puts it into BRAKE mode.
   int hasStopped = -1;
   while (hasStopped < 0) {
+    RCLCPP_INFO(LOGGER, "dhd : stopping the device, please wait...");
     hasStopped = dhdStop(interface_ID_);
     // Sleep 100 ms
     dhdSleep(0.1);
