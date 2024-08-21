@@ -167,6 +167,7 @@ CallbackReturn FDEffortHardwareInterface::on_init(
   } else {
     emulate_button_ = false;
   }
+  RCLCPP_INFO(LOGGER, "Emulating button: %s", emulate_button_ ? "true" : "false");
 
   auto it_fd_inertia = info_.hardware_parameters.find("inertia_interface_name");
   if (it_fd_inertia != info_.hardware_parameters.end()) {
@@ -281,12 +282,18 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   flag += dhdGetPosition(
     &hw_states_position_[0], &hw_states_position_[1], &hw_states_position_[2],
     interface_ID_);
-  if (dhdHasWrist(interface_ID_) && hw_states_position_.size() > 3) {
+  if (dhdHasWrist(interface_ID_) && hw_states_position_.size() == 4) {
+    // No orientation, skip!
+  } else if (dhdHasWrist(interface_ID_) && hw_states_position_.size() > 3) {
     flag += dhdGetOrientationRad(
       &hw_states_position_[3], &hw_states_position_[4],
       &hw_states_position_[5], interface_ID_);
   }
-  if (dhdHasGripper(interface_ID_) && hw_states_position_.size() > 6) {
+
+  // Get gripper angle
+  if (dhdHasGripper(interface_ID_) && hw_states_position_.size() == 4) {
+    flag += dhdGetGripperAngleRad(&hw_states_position_[3], interface_ID_);
+  } else if (dhdHasGripper(interface_ID_) && hw_states_position_.size() > 6) {
     flag += dhdGetGripperAngleRad(&hw_states_position_[6], interface_ID_);
   }
 
@@ -294,27 +301,44 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   flag += dhdGetLinearVelocity(
     &hw_states_velocity_[0], &hw_states_velocity_[1],
     &hw_states_velocity_[2], interface_ID_);
-  if (dhdHasWrist(interface_ID_) && hw_states_velocity_.size() > 3) {
+  if (dhdHasWrist(interface_ID_) && hw_states_velocity_.size() == 4) {
+    // No orientation, skip!
+  } else if (dhdHasWrist(interface_ID_) && hw_states_velocity_.size() > 3) {
     flag += dhdGetAngularVelocityRad(
       &hw_states_velocity_[3], &hw_states_velocity_[4],
       &hw_states_velocity_[5], interface_ID_);
   }
-  if (dhdHasGripper(interface_ID_) && hw_states_velocity_.size() > 6) {
+
+  // Get gripper angular velocity
+  if (dhdHasGripper(interface_ID_) && hw_states_velocity_.size() == 4) {
+    flag += dhdGetGripperAngularVelocityRad(&hw_states_velocity_[3], interface_ID_);
+  } else if (dhdHasGripper(interface_ID_) && hw_states_velocity_.size() > 6) {
     flag += dhdGetGripperAngularVelocityRad(&hw_states_velocity_[6], interface_ID_);
   }
+
   // Get forces
   double torque[3];
   double gripper_force;
   flag += dhdGetForceAndTorqueAndGripperForce(
-    &hw_states_effort_[0], &hw_states_effort_[1],
-    &hw_states_effort_[2], &torque[0], &torque[1],
-    &torque[2], &gripper_force, interface_ID_);
-  if (dhdHasWrist(interface_ID_) && hw_states_effort_.size() > 3) {
+    &hw_states_effort_[0], &hw_states_effort_[1], &hw_states_effort_[2],
+    &torque[0], &torque[1], &torque[2],
+    &gripper_force,
+    interface_ID_
+  );
+
+  // Get torques
+  if (dhdHasWrist(interface_ID_) && hw_states_velocity_.size() == 4) {
+    // No orientation, skip!
+  } else if (dhdHasWrist(interface_ID_) && hw_states_effort_.size() > 3) {
     hw_states_effort_[3] = torque[0];
     hw_states_effort_[4] = torque[1];
     hw_states_effort_[5] = torque[2];
   }
-  if (dhdHasGripper(interface_ID_) && hw_states_effort_.size() > 6) {
+
+  // Get gripper force
+  if (dhdHasGripper(interface_ID_) && hw_states_effort_.size() == 4) {
+    hw_states_effort_[3] = gripper_force;
+  } else if (dhdHasGripper(interface_ID_) && hw_states_effort_.size() > 6) {
     hw_states_effort_[6] = gripper_force;
   }
   // Get inertia
@@ -342,6 +366,7 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   } else if (button_status == 0) {
     hw_button_state_[0] = 0.0;
   } else {
+    RCLCPP_ERROR(LOGGER, "Invalid button reading!");
     flag += -1;
   }
 
@@ -370,12 +395,18 @@ hardware_interface::return_type FDEffortHardwareInterface::write(
         hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2],
         hw_commands_effort_[3], hw_commands_effort_[4], hw_commands_effort_[5],
         hw_commands_effort_[6], interface_ID_);
+    } else if (dhdHasWrist(interface_ID_) && hw_states_effort_.size() == 4) {
+      dhdSetForceAndTorqueAndGripperForce(
+        hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2],
+        0.0, 0.0, 0.0, hw_commands_effort_[3], interface_ID_);
     } else if (dhdHasWrist(interface_ID_) && hw_states_effort_.size() > 3) {
+      // No clutch joint
       dhdSetForceAndTorqueAndGripperForce(
         hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2],
         hw_commands_effort_[3], hw_commands_effort_[4], hw_commands_effort_[5],
         0, interface_ID_);
     } else {
+      // Only translation is actuated
       dhdSetForceAndTorqueAndGripperForce(
         hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2],
         0, 0, 0, 0, interface_ID_);
@@ -395,9 +426,7 @@ bool FDEffortHardwareInterface::connectToDevice()
 
   // Open connection
   if (dhdOpen() >= 0) {
-    RCLCPP_INFO(
-      rclcpp::get_logger(
-        "FDEffortHardwareInterface"), "dhd : %s device detected", dhdGetSystemName());
+    RCLCPP_INFO(LOGGER, "dhd : %s device detected", dhdGetSystemName());
 
     // Check if the device has 3 dof or more
     if (dhdHasWrist(interface_ID_)) {
@@ -409,56 +438,55 @@ bool FDEffortHardwareInterface::connectToDevice()
     // Retrieve the mass of the device
     double effector_mass = 0.0;
     if (dhdGetEffectorMass(&effector_mass, interface_ID_) == DHD_NO_ERROR) {
-      RCLCPP_INFO(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Effector Mass = %f (g)", effector_mass * 1000.0);
+      RCLCPP_INFO(LOGGER, "dhd : Effector Mass = %f (g)", effector_mass * 1000.0);
     } else {
-      RCLCPP_WARN(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Impossible to retrieve effector mass !");
+      RCLCPP_WARN(LOGGER, "dhd : Impossible to retrieve effector mass !");
     }
 
     // Set force limit & enable force
     double forceMax = 12;   // N
     if (dhdSetMaxForce(forceMax, interface_ID_) < DHD_NO_ERROR) {
+      RCLCPP_ERROR(LOGGER, "dhd : Could not set max force!");
       disconnectFromDevice();
     }
     // apply zero force
     dhdSetBrakes(DHD_OFF, interface_ID_);
 
     if (dhdEnableForce(DHD_ON, interface_ID_) < DHD_NO_ERROR) {
+      RCLCPP_ERROR(LOGGER, "dhd : Could not enable force control!");
       disconnectFromDevice();
+      return false;
     }
     // Gravity compensation
     if (dhdSetGravityCompensation(DHD_ON, interface_ID_) < DHD_NO_ERROR) {
-      RCLCPP_WARN(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Could not enable the gravity compensation !");
+      RCLCPP_WARN(LOGGER, "dhd : Could not enable the gravity compensation !");
       disconnectFromDevice();
+      return false;
     } else {
-      RCLCPP_INFO(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Gravity compensation enabled");
+      RCLCPP_INFO(LOGGER, "dhd : Gravity compensation enabled");
     }
     RCLCPP_INFO(LOGGER, "dhd : Device connected !");
 
-    if (emulate_button_ && dhdHasGripper(interface_ID_)) {
-      RCLCPP_INFO(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Emulating button from clutch joint !");
+    // Emulate button
+    if (emulate_button_ && !dhdHasGripper(interface_ID_)) {
+      RCLCPP_ERROR(LOGGER, "dhd : Could not enable button emulation, no gripper found!");
+    } else if (emulate_button_ && dhdHasGripper(interface_ID_)) {
+      RCLCPP_INFO(LOGGER, "dhd : Emulating button from clutch joint...");
       if (dhdEmulateButton(DHD_ON, interface_ID_) < DHD_NO_ERROR) {
-        RCLCPP_WARN(
-        rclcpp::get_logger(
-          "FDEffortHardwareInterface"), "dhd : Could not enable button emulation!");
+        RCLCPP_ERROR(LOGGER, "dhd : Could not enable button emulation!");
         disconnectFromDevice();
+        return false;
       }
+      RCLCPP_INFO(LOGGER, "dhd : OK, button will be emulated from clutch joint.");
     }
     // Set force to zero
     if (dhdSetForceAndTorqueAndGripperForce(
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
         interface_ID_) < DHD_NO_ERROR)
     {
+      RCLCPP_ERROR(LOGGER, "dhd : Could not initialize force control!");
       disconnectFromDevice();
+      return false;
     }
 
     // Sleep 100 ms
@@ -467,9 +495,7 @@ bool FDEffortHardwareInterface::connectToDevice()
 
     return isConnected_;
   } else {
-    RCLCPP_ERROR(
-      rclcpp::get_logger(
-        "FDEffortHardwareInterface"), "dhd : Could not connect to device !");
+    RCLCPP_ERROR(LOGGER, "dhd : Could not connect to device !");
     isConnected_ = false;
     return isConnected_;
   }
@@ -477,10 +503,10 @@ bool FDEffortHardwareInterface::connectToDevice()
 // ------------------------------------------------------------------------------------------
 bool FDEffortHardwareInterface::disconnectFromDevice()
 {
-  RCLCPP_INFO(LOGGER, "dhd : stopping the device.");
   // Stop the device: disables the force on the haptic device and puts it into BRAKE mode.
   int hasStopped = -1;
   while (hasStopped < 0) {
+    RCLCPP_INFO(LOGGER, "dhd : stopping the device, please wait...");
     hasStopped = dhdStop(interface_ID_);
     // Sleep 100 ms
     dhdSleep(0.1);
