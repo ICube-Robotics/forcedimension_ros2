@@ -343,6 +343,7 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   } else if (button_status == 0) {
     hw_button_state_[0] = 0.0;
   } else {
+    RCLCPP_ERROR(LOGGER, "Invalid button reading!");
     flag += -1;
   }
 
