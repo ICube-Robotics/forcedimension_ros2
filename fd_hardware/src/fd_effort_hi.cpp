@@ -282,12 +282,18 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   flag += dhdGetPosition(
     &hw_states_position_[0], &hw_states_position_[1], &hw_states_position_[2],
     interface_ID_);
-  if (dhdHasWrist(interface_ID_) && hw_states_position_.size() > 3) {
+  if (dhdHasWrist(interface_ID_) && hw_states_position_.size() == 4) {
+    // No orientation, skip!
+  } else if (dhdHasWrist(interface_ID_) && hw_states_position_.size() > 3) {
     flag += dhdGetOrientationRad(
       &hw_states_position_[3], &hw_states_position_[4],
       &hw_states_position_[5], interface_ID_);
   }
-  if (dhdHasGripper(interface_ID_) && hw_states_position_.size() > 6) {
+
+  // Get gripper angle
+  if (dhdHasGripper(interface_ID_) && hw_states_position_.size() == 4) {
+    flag += dhdGetGripperAngleRad(&hw_states_position_[3], interface_ID_);
+  } else if (dhdHasGripper(interface_ID_) && hw_states_position_.size() > 6) {
     flag += dhdGetGripperAngleRad(&hw_states_position_[6], interface_ID_);
   }
 
@@ -295,27 +301,44 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   flag += dhdGetLinearVelocity(
     &hw_states_velocity_[0], &hw_states_velocity_[1],
     &hw_states_velocity_[2], interface_ID_);
-  if (dhdHasWrist(interface_ID_) && hw_states_velocity_.size() > 3) {
+  if (dhdHasWrist(interface_ID_) && hw_states_velocity_.size() == 4) {
+    // No orientation, skip!
+  } else if (dhdHasWrist(interface_ID_) && hw_states_velocity_.size() > 3) {
     flag += dhdGetAngularVelocityRad(
       &hw_states_velocity_[3], &hw_states_velocity_[4],
       &hw_states_velocity_[5], interface_ID_);
   }
-  if (dhdHasGripper(interface_ID_) && hw_states_velocity_.size() > 6) {
+
+  // Get gripper angular velocity
+  if (dhdHasGripper(interface_ID_) && hw_states_velocity_.size() == 4) {
+    flag += dhdGetGripperAngularVelocityRad(&hw_states_velocity_[3], interface_ID_);
+  } else if (dhdHasGripper(interface_ID_) && hw_states_velocity_.size() > 6) {
     flag += dhdGetGripperAngularVelocityRad(&hw_states_velocity_[6], interface_ID_);
   }
+
   // Get forces
   double torque[3];
   double gripper_force;
   flag += dhdGetForceAndTorqueAndGripperForce(
-    &hw_states_effort_[0], &hw_states_effort_[1],
-    &hw_states_effort_[2], &torque[0], &torque[1],
-    &torque[2], &gripper_force, interface_ID_);
-  if (dhdHasWrist(interface_ID_) && hw_states_effort_.size() > 3) {
+    &hw_states_effort_[0], &hw_states_effort_[1], &hw_states_effort_[2],
+    &torque[0], &torque[1], &torque[2],
+    &gripper_force,
+    interface_ID_
+  );
+
+  // Get torques
+  if (dhdHasWrist(interface_ID_) && hw_states_velocity_.size() == 4) {
+    // No orientation, skip!
+  } else if (dhdHasWrist(interface_ID_) && hw_states_effort_.size() > 3) {
     hw_states_effort_[3] = torque[0];
     hw_states_effort_[4] = torque[1];
     hw_states_effort_[5] = torque[2];
   }
-  if (dhdHasGripper(interface_ID_) && hw_states_effort_.size() > 6) {
+
+  // Get gripper force
+  if (dhdHasGripper(interface_ID_) && hw_states_effort_.size() == 4) {
+    hw_states_effort_[3] = gripper_force;
+  } else if (dhdHasGripper(interface_ID_) && hw_states_effort_.size() > 6) {
     hw_states_effort_[6] = gripper_force;
   }
   // Get inertia
@@ -372,12 +395,18 @@ hardware_interface::return_type FDEffortHardwareInterface::write(
         hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2],
         hw_commands_effort_[3], hw_commands_effort_[4], hw_commands_effort_[5],
         hw_commands_effort_[6], interface_ID_);
+    } else if (dhdHasWrist(interface_ID_) && hw_states_effort_.size() == 4) {
+      dhdSetForceAndTorqueAndGripperForce(
+        hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2],
+        0.0, 0.0, 0.0, hw_commands_effort_[3], interface_ID_);
     } else if (dhdHasWrist(interface_ID_) && hw_states_effort_.size() > 3) {
+      // No clutch joint
       dhdSetForceAndTorqueAndGripperForce(
         hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2],
         hw_commands_effort_[3], hw_commands_effort_[4], hw_commands_effort_[5],
         0, interface_ID_);
     } else {
+      // Only translation is actuated
       dhdSetForceAndTorqueAndGripperForce(
         hw_commands_effort_[0], hw_commands_effort_[1], hw_commands_effort_[2],
         0, 0, 0, 0, interface_ID_);
