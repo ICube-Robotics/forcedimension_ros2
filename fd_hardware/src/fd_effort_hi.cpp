@@ -178,7 +178,7 @@ CallbackReturn FDEffortHardwareInterface::on_init(
 
   auto it_interface_mass = info_.hardware_parameters.find("effector_mass");
   if (it_interface_mass != info_.hardware_parameters.end()) {
-    effector_mass_ = hardware_interface::stod(it_interface_id->second);
+    effector_mass_ = hardware_interface::stod(it_interface_mass->second);
     RCLCPP_INFO(LOGGER, "Interface mass parameter found: %lf Kg", effector_mass_);
   } else {
     effector_mass_ = -1.0;
