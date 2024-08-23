@@ -176,6 +176,14 @@ CallbackReturn FDEffortHardwareInterface::on_init(
     inertia_interface_name_ = "fd_inertia";
   }
 
+  auto it_interface_mass = info_.hardware_parameters.find("effector_mass");
+  if (it_interface_mass != info_.hardware_parameters.end()) {
+    effector_mass_ = hardware_interface::stod(it_interface_id->second);
+    RCLCPP_INFO(LOGGER, "Interface mass parameter found: %lf Kg", effector_mass_);
+  } else {
+    effector_mass_ = -1.0;
+  }
+
   // Contingency for emulated button
   // (commanded clutch force might be always left to NaN...)
   if (emulate_button_ &&
@@ -436,9 +444,9 @@ bool FDEffortHardwareInterface::connectToDevice()
     }
 
     // Retrieve the mass of the device
-    double effector_mass = 0.0;
-    if (dhdGetEffectorMass(&effector_mass, interface_ID_) == DHD_NO_ERROR) {
-      RCLCPP_INFO(LOGGER, "dhd : Effector Mass = %f (g)", effector_mass * 1000.0);
+    double current_effector_mass = 0.0;
+    if (dhdGetEffectorMass(&current_effector_mass, interface_ID_) == DHD_NO_ERROR) {
+      RCLCPP_INFO(LOGGER, "dhd : Effector Mass = %f (g)", current_effector_mass * 1000.0);
     } else {
       RCLCPP_WARN(LOGGER, "dhd : Impossible to retrieve effector mass !");
     }
@@ -457,9 +465,22 @@ bool FDEffortHardwareInterface::connectToDevice()
       disconnectFromDevice();
       return false;
     }
+    // Set effector mass
+    if (effector_mass_ > 0.0) {
+      RCLCPP_INFO(
+        LOGGER,
+        "dhd : Changing effector mass from %fto %f (g)!",
+        current_effector_mass * 1000.0,
+        effector_mass_ * 1000.0);
+      if (dhdSetEffectorMass(effector_mass_, interface_ID_) < DHD_NO_ERROR) {
+        RCLCPP_ERROR(LOGGER, "dhd : Failed to set effector mass!");
+      disconnectFromDevice();
+      return false;
+      }
+    }
     // Gravity compensation
     if (dhdSetGravityCompensation(DHD_ON, interface_ID_) < DHD_NO_ERROR) {
-      RCLCPP_WARN(LOGGER, "dhd : Could not enable the gravity compensation !");
+      RCLCPP_ERROR(LOGGER, "dhd : Could not enable the gravity compensation !");
       disconnectFromDevice();
       return false;
     } else {
