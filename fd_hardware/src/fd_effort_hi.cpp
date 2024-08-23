@@ -184,6 +184,15 @@ CallbackReturn FDEffortHardwareInterface::on_init(
     effector_mass_ = -1.0;
   }
 
+
+  auto it_ignore_orientation = info_.hardware_parameters.find("ignore_orientation_readings");
+  if (it_ignore_orientation != info_.hardware_parameters.end()) {
+    ignore_orientation_ = hardware_interface::parse_bool(it_ignore_orientation->second);
+  } else {
+    ignore_orientation_ = false;
+  }
+  RCLCPP_INFO(LOGGER, "Ignoring orientation readings: %s", ignore_orientation_ ? "true" : "false");
+
   // Contingency for emulated button
   // (commanded clutch force might be always left to NaN...)
   if (emulate_button_ &&
@@ -290,12 +299,17 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   flag += dhdGetPosition(
     &hw_states_position_[0], &hw_states_position_[1], &hw_states_position_[2],
     interface_ID_);
-  if (dhdHasWrist(interface_ID_) && hw_states_position_.size() == 4) {
+  if (ignore_orientation_ && hw_states_position_.size() == 4) {
     // No orientation, skip!
-  } else if (dhdHasWrist(interface_ID_) && hw_states_position_.size() > 3) {
+  } else if (!ignore_orientation_ && hw_states_position_.size() > 3) {
     flag += dhdGetOrientationRad(
       &hw_states_position_[3], &hw_states_position_[4],
       &hw_states_position_[5], interface_ID_);
+  } else if (ignore_orientation_ && hw_states_position_.size() > 3) {
+    // Force orientation to zero
+    hw_states_position_[3] = 0.0;
+    hw_states_position_[4] = 0.0;
+    hw_states_position_[5] = 0.0;
   }
 
   // Get gripper angle
@@ -311,10 +325,15 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
     &hw_states_velocity_[2], interface_ID_);
   if (dhdHasWrist(interface_ID_) && hw_states_velocity_.size() == 4) {
     // No orientation, skip!
-  } else if (dhdHasWrist(interface_ID_) && hw_states_velocity_.size() > 3) {
+  } else if (!ignore_orientation_ && hw_states_velocity_.size() > 3) {
     flag += dhdGetAngularVelocityRad(
       &hw_states_velocity_[3], &hw_states_velocity_[4],
       &hw_states_velocity_[5], interface_ID_);
+  } else if (ignore_orientation_ && hw_states_velocity_.size() > 3) {
+    // Force angular velocity to zero
+    hw_states_velocity_[3] = 0.0;
+    hw_states_velocity_[4] = 0.0;
+    hw_states_velocity_[5] = 0.0;
   }
 
   // Get gripper angular velocity
@@ -337,10 +356,15 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   // Get torques
   if (dhdHasWrist(interface_ID_) && hw_states_velocity_.size() == 4) {
     // No orientation, skip!
-  } else if (dhdHasWrist(interface_ID_) && hw_states_effort_.size() > 3) {
+  } else if (!ignore_orientation_ && hw_states_effort_.size() > 3) {
     hw_states_effort_[3] = torque[0];
     hw_states_effort_[4] = torque[1];
     hw_states_effort_[5] = torque[2];
+  } else if (ignore_orientation_ && hw_states_effort_.size() > 3) {
+    // Force angular forces to zero
+    hw_states_effort_[3] = 0.0;
+    hw_states_effort_[4] = 0.0;
+    hw_states_effort_[5] = 0.0;
   }
 
   // Get gripper force
@@ -438,9 +462,9 @@ bool FDEffortHardwareInterface::connectToDevice()
 
     // Check if the device has 3 dof or more
     if (dhdHasWrist(interface_ID_)) {
-      RCLCPP_INFO(LOGGER, "dhd : Rotation enabled ");
+      RCLCPP_INFO(LOGGER, "dhd : Rotation supported");
     } else {
-      RCLCPP_INFO(LOGGER, "dhd : Rotation disabled ");
+      RCLCPP_INFO(LOGGER, "dhd : Rotation not supported");
     }
 
     // Retrieve the mass of the device
@@ -508,6 +532,11 @@ bool FDEffortHardwareInterface::connectToDevice()
       RCLCPP_ERROR(LOGGER, "dhd : Could not initialize force control!");
       disconnectFromDevice();
       return false;
+    }
+
+    ignore_orientation_ &= !dhdHasWrist(interface_ID_);
+    if (ignore_orientation_) {
+      RCLCPP_INFO(LOGGER, "dhd : Orientation will be ignored !");
     }
 
     // Sleep 100 ms
