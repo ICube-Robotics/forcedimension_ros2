@@ -25,5 +25,11 @@
         ignore_orientation_readings="false"
         use_clutch="$(arg use_clutch)"
         emulate_button="true"
-    /> <!-- orientation_is_actuated = use_orientation for now (see HW impl.) -->
+        effector_mass="-1.0"
+    />
+
+    <!-- Default effector masses:
+        - 0.148 kg for the Omega 3 device
+        - 0.5 kg for the Omega 6 device
+    -->
 </robot>
