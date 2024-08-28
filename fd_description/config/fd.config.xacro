@@ -22,6 +22,7 @@
         use_fake_hardware="$(arg use_fake_hardware)"
         use_orientation="$(arg use_orientation)"
     	orientation_is_actuated="$(arg use_orientation)"
+        ignore_orientation_readings="false"
         use_clutch="$(arg use_clutch)"
         emulate_button="true"
     /> <!-- orientation_is_actuated = use_orientation for now (see HW impl.) -->
