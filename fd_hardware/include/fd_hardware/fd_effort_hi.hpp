@@ -68,6 +68,12 @@ private:
   /// If true, the button will be emulated from clutch joint (for omega 6 / sigma 7, see SDK doc)
   bool emulate_button_ = false;
 
+  // If true, the reading will emulate an omega 3 interface
+  bool ignore_orientation_ = false;
+
+  /// Interface mass in Kg, not used if negative
+  double effector_mass_ = -1.0;
+
   std::string inertia_interface_name_;
 
   // Store the command for the robot
