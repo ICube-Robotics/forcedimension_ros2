@@ -534,7 +534,7 @@ bool FDEffortHardwareInterface::connectToDevice()
       return false;
     }
 
-    ignore_orientation_ &= !dhdHasWrist(interface_ID_);
+    ignore_orientation_ |= !dhdHasWrist(interface_ID_);
     if (ignore_orientation_) {
       RCLCPP_INFO(LOGGER, "dhd : Orientation will be ignored !");
     }
