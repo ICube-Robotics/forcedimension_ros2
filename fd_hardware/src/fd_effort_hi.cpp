@@ -161,6 +161,15 @@ CallbackReturn FDEffortHardwareInterface::on_init(
     interface_ID_ = -1;
   }
 
+
+  auto it_interface_serial_number = info_.hardware_parameters.find("interface_serial_number");
+  if (it_interface_serial_number != info_.hardware_parameters.end()) {
+    interface_SN_ = stoi(it_interface_serial_number->second);
+    RCLCPP_INFO(LOGGER, "Using interface serial number: %d", interface_SN_);
+  } else {
+    interface_SN_ = -1;
+  }
+
   auto it_emulate_button = info_.hardware_parameters.find("emulate_button");
   if (it_emulate_button != info_.hardware_parameters.end()) {
     emulate_button_ = hardware_interface::parse_bool(it_emulate_button->second);
@@ -381,7 +390,7 @@ hardware_interface::return_type FDEffortHardwareInterface::read(
   flag += dhdGetJointAngles(joint_position, interface_ID_);
   // use "dhdJointAnglesToInertiaMatrix (double j[DHD_MAX_DOF], double inertia[6][6], char ID=-1)"
   // to get the current inertia matrix
-  flag += dhdJointAnglesToInertiaMatrix(joint_position, inertia_array);
+  flag += dhdJointAnglesToInertiaMatrix(joint_position, inertia_array, interface_ID_);
   flag += dhdDisableExpertMode();
 
   // Map upper triangular part of inertia to inertia state interface
@@ -462,21 +471,31 @@ bool FDEffortHardwareInterface::connectToDevice()
 
   // Open connection
   bool dhd_open_success = false;
-  if (interface_ID_ < 0) {
-    // Open default device
-    RCLCPP_INFO(LOGGER, "dhd : Connecting to default device...");
-    interface_ID_ = dhdOpen();
+  if (interface_SN_ >= 0) {
+    // Open specified device from serial number
+    RCLCPP_INFO(
+      LOGGER, "dhd : Connecting to device with serial number %d, please wait...", interface_SN_);
+    uint16_t serialNumber = static_cast<uint16_t>(interface_SN_);
+    interface_ID_ = dhdOpenSerial(serialNumber);
     dhd_open_success = (interface_ID_ >= 0);
-  } else {
-    // Open specified device
-    RCLCPP_INFO(LOGGER, "dhd : Connecting to device with ID= %d...", interface_ID_);
+    // dhd_open_success = (dhdOpenSerial(serialNumber) >= 0);
+  } else if (interface_ID_ >= 0) {
+    // Open specified device from device ID
+    RCLCPP_INFO(LOGGER, "dhd : Connecting to device with ID= %d, please wait...", interface_ID_);
     interface_ID_ = dhdOpenID(interface_ID_);
     dhd_open_success = (interface_ID_ >= 0);
+    // dhd_open_success = (dhdOpenID(interface_ID_) >= 0);
+  } else {
+    // Open default device
+    RCLCPP_INFO(LOGGER, "dhd : Connecting to default device., please wait..");
+    interface_ID_ = dhdOpen();
+    dhd_open_success = (interface_ID_ >= 0);
+    // dhd_open_success = (dhdOpen() >= 0);
   }
 
   // Check connection and setup dhd device
   if (dhd_open_success) {
-    RCLCPP_INFO(LOGGER, "dhd : %s device detected", dhdGetSystemName());
+    RCLCPP_INFO(LOGGER, "dhd : %s device detected", dhdGetSystemName(interface_ID_));
     uint16_t serialNumber = 0;
     if (dhdGetSerialNumber(&serialNumber, interface_ID_) < 0) {
       RCLCPP_WARN(LOGGER, "dhd : Impossible to retrieve device serial number: %s!",
@@ -484,6 +503,7 @@ bool FDEffortHardwareInterface::connectToDevice()
     } else {
       RCLCPP_INFO(LOGGER, "dhd : device serial number = %d", serialNumber);
     }
+    RCLCPP_INFO(LOGGER, "dhd : device interface ID = %d", interface_ID_);
 
     // Check if the device has 3 dof or more
     if (dhdHasWrist(interface_ID_)) {
@@ -591,7 +611,7 @@ bool FDEffortHardwareInterface::disconnectFromDevice()
   int connectionIsClosed = dhdClose(interface_ID_);
   if (connectionIsClosed >= 0) {
     RCLCPP_INFO(LOGGER, "dhd :  Disconnected ! ");
-    interface_ID_ = false;
+    interface_ID_ = -1;
     return true;
   } else {
     RCLCPP_ERROR(LOGGER, "dhd : Failed to disconnect !");

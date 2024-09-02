@@ -62,6 +62,9 @@ private:
   /// ID of the interface (Rq: "-1" = invalid/any that is connected)
   char interface_ID_ = -1;
 
+  /// Serial number of the interface (Rq: "-1" = invalid / unspecified)
+  int interface_SN_ = -1;
+
   /// Turned to true after the connection
   bool isConnected_ = false;
 
