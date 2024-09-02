@@ -455,10 +455,35 @@ bool FDEffortHardwareInterface::connectToDevice()
 {
   int major, minor, release, revision;
   dhdGetSDKVersion(&major, &minor, &release, &revision);
+  RCLCPP_INFO(
+    LOGGER,
+    "dhd : Using SDK version %d.%d (release %d / revision %d)",
+    major, minor, release, revision);
 
   // Open connection
-  if (dhdOpen() >= 0) {
+  bool dhd_open_success = false;
+  if (interface_ID_ < 0) {
+    // Open default device
+    RCLCPP_INFO(LOGGER, "dhd : Connecting to default device...");
+    interface_ID_ = dhdOpen();
+    dhd_open_success = (interface_ID_ >= 0);
+  } else {
+    // Open specified device
+    RCLCPP_INFO(LOGGER, "dhd : Connecting to device with ID= %d...", interface_ID_);
+    interface_ID_ = dhdOpenID(interface_ID_);
+    dhd_open_success = (interface_ID_ >= 0);
+  }
+
+  // Check connection and setup dhd device
+  if (dhd_open_success) {
     RCLCPP_INFO(LOGGER, "dhd : %s device detected", dhdGetSystemName());
+    uint16_t serialNumber = 0;
+    if (dhdGetSerialNumber(&serialNumber, interface_ID_) < 0) {
+      RCLCPP_WARN(LOGGER, "dhd : Impossible to retrieve device serial number: %s!",
+        dhdErrorGetLastStr());
+    } else {
+      RCLCPP_INFO(LOGGER, "dhd : device serial number = %d", serialNumber);
+    }
 
     // Check if the device has 3 dof or more
     if (dhdHasWrist(interface_ID_)) {
@@ -498,8 +523,8 @@ bool FDEffortHardwareInterface::connectToDevice()
         effector_mass_ * 1000.0);
       if (dhdSetEffectorMass(effector_mass_, interface_ID_) < DHD_NO_ERROR) {
         RCLCPP_ERROR(LOGGER, "dhd : Failed to set effector mass!");
-      disconnectFromDevice();
-      return false;
+        disconnectFromDevice();
+        return false;
       }
     }
     // Gravity compensation
