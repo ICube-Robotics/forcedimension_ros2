@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
     <xacro:macro
         name="fd_ros2_control"
-        params="robot_id plugin_name:='FDHapticInterface' interface_id:='-1' effector_mass:='-1.0' use_fake_hardware:='false' use_orientation:='false' orientation_is_actuated:='false' use_clutch:='false' emulate_button:='false' ignore_orientation_readings:='false'">
+        params="robot_id plugin_name:='FDHapticInterface' interface_id:='-1' interface_sn:='-1' effector_mass:='-1.0' use_fake_hardware:='false' use_orientation:='false' orientation_is_actuated:='false' use_clutch:='false' emulate_button:='false' ignore_orientation_readings:='false'">
         <ros2_control name="${plugin_name}" type="system">
             <hardware>
                 <xacro:if value="${use_fake_hardware}">
@@ -11,6 +11,7 @@
                 <xacro:unless value="${use_fake_hardware}">
                     <plugin>fd_hardware/FDEffortHardwareInterface</plugin>
                     <param name="interface_id">${interface_id}</param>
+                    <param name="interface_serial_number">${interface_sn}</param>
                     <param name="emulate_button">${emulate_button}</param>
                     <param name="inertia_interface_name">${robot_id}_inertia</param>
                     <param name="effector_mass">${effector_mass}</param>

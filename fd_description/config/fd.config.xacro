@@ -18,6 +18,7 @@
     <xacro:include filename="$(find fd_description)/ros2_control/fd.r2c_hardware.xacro" />
     <xacro:fd_ros2_control
         interface_id="-1"
+        interface_sn="-1"
         robot_id= "$(arg robot_id)"
         use_fake_hardware="$(arg use_fake_hardware)"
         use_orientation="$(arg use_orientation)"
