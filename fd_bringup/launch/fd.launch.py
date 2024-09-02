@@ -47,7 +47,8 @@ def generate_launch_description():
             ' use_clutch:=', use_clutch,
         ]
     )
-    robot_description = {'robot_description': ParameterValue(robot_description_content, value_type=str)}
+    robot_description = \
+        {'robot_description': ParameterValue(robot_description_content, value_type=str)}
 
     phi_controllers = PathJoinSubstitution(
         [
