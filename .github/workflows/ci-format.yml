@@ -11,6 +11,8 @@ jobs:
   pre-commit:
     name: Format
     runs-on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-jammy-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v4.7.0
