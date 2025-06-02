@@ -5,7 +5,7 @@ This stack includes `ros2_control` drivers for Force Dimension SDK compatible ha
 ***Tested with a Humble ROS distribution only (Ubuntu 22.04 LTS)***
 
 [![Licence](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![CI (humble)](../../actions/workflows/ci.yml/badge.svg?branch=humble)](../../actions/workflows/ci.yml?query=branch:humble)
+[![CI (humble)](../../actions/workflows/ci-humble.yml/badge.svg?branch=humble)](../../actions/workflows/ci-humble.yml?query=branch:humble)
 
 > **Warning**
 >
