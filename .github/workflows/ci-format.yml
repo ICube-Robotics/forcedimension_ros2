@@ -10,16 +10,15 @@ on:
 jobs:
   pre-commit:
     name: Format
-    runs-on: ubuntu-latest
-    container:
-      image: rostooling/setup-ros-docker:ubuntu-jammy-latest
+    runs-on: ubuntu:jammy
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v4.7.0
       with:
         python-version: '3.10'
     - name: Install system hooks
-      run: sudo apt install -qq clang-format-14 cppcheck
+      run: DEBIAN_FRONTEND=noninteractive \
+        sudo apt install -qq clang-format-14 cppcheck
     - uses: pre-commit/action@v3.0.0
       with:
         extra_args: --all-files --hook-stage manual
