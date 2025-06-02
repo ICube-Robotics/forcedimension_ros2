@@ -1,10 +1,12 @@
 name: CI (humble)
 on:
-  push:
-    branches: [ humble ]
-  pull_request:
-    branches: [ humble ]
   workflow_dispatch:
+  push:
+    branches:
+      - humble
+  pull_request:
+    branches:
+      - humble
   schedule:
     - cron: '0 0 * * 0'
 jobs:
