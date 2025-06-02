@@ -11,17 +11,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:noble
+      image: rostooling/setup-ros-docker:ubuntu-noble-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ros-tooling/setup-ros@v0.7
-        with:
-          use-ros2-testing: true
-      - name: Print ls and pwd
-        run: |
-          ls
-          pwd
-      - uses: ros-tooling/action-ros-ci@v0.3
+      - uses: ros-tooling/action-ros-ci@0.4.3
         with:
           target-ros2-distro: rolling
           vcs-repo-file-url: ./forcedimension_ros2.repos
