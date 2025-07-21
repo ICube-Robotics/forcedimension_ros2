@@ -40,9 +40,18 @@ namespace fd_hardware
 
 rclcpp::Logger LOGGER = rclcpp::get_logger("FDEffortHardwareInterface");
 
-unsigned int flattened_index_from_triangular_index(unsigned int i, unsigned int j)
+unsigned int flattened_index_from_triangular_index(
+  unsigned int idx_row,
+  unsigned int idx_col,
+  unsigned int dim = 6)
 {
-  return i * (i - 1) / 2 + j;
+  unsigned int i = idx_row;
+  unsigned int j = idx_col;
+  if (idx_col < idx_row) {
+    i = idx_col;
+    j = idx_row;
+  }
+  return i * (2 * dim - i - 1) / 2 + j;
 }
 
 
