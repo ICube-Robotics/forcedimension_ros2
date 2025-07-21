@@ -43,9 +43,12 @@ class State;
 namespace fd_inertia_broadcaster
 {
 const auto kUninitializedValue = std::numeric_limits<double>::quiet_NaN();
-const size_t sizeFlattenedInertia = 15;
+const size_t sizeFlattenedInertia = 21;
 
-unsigned int flattened_index_from_triangular_index(unsigned int idx_row, unsigned int idx_col)
+unsigned int flattened_index_from_triangular_index(
+  unsigned int idx_row,
+  unsigned int idx_col,
+  unsigned int dim = 6)
 {
   unsigned int i = idx_row;
   unsigned int j = idx_col;
@@ -53,9 +56,8 @@ unsigned int flattened_index_from_triangular_index(unsigned int idx_row, unsigne
     i = idx_col;
     j = idx_row;
   }
-  return i * (i - 1) / 2 + j;
+  return i * (2 * dim - i - 1) / 2 + j;
 }
-
 template<class Derived>
 void matrixEigenToMsg(const Eigen::MatrixBase<Derived> & e, std_msgs::msg::Float64MultiArray & m)
 {
